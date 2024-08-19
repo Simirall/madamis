@@ -14,6 +14,9 @@ import { useForm } from "react-hook-form";
 import { Plus } from "@phosphor-icons/react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { hc } from "hono/client";
+import { MadamisPostType } from "../../apis/madamis";
+import { useMadamisList } from "../hooks/useMadamisList";
 
 export const AddMadamisButton = () => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -45,6 +48,8 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
+const client = hc<MadamisPostType>("/api/madamis/");
+
 const AddMadamisModal = ({
   opened,
   close,
@@ -52,6 +57,8 @@ const AddMadamisModal = ({
   opened: boolean;
   close: () => void;
 }) => {
+  const { mutate } = useMadamisList();
+
   const {
     register,
     reset,
@@ -61,8 +68,11 @@ const AddMadamisModal = ({
     resolver: zodResolver(formSchema),
   });
 
-  const onSubmit = (data: FormSchema) => {
-    console.log(data);
+  const onSubmit = async (data: FormSchema) => {
+    await client.index.$post({
+      json: data,
+    });
+    await mutate();
     close();
     reset();
   };

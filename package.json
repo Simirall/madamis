@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@hono/react-renderer": "^0.2.1",
+    "@hono/zod-validator": "^0.2.2",
     "@hookform/resolvers": "^3.9.0",
     "@mantine/core": "^7.12.1",
     "@mantine/hooks": "^7.12.1",
