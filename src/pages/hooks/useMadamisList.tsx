@@ -1,13 +1,13 @@
 import useSWR from "swr";
 import { hc } from "hono/client";
-import { MadamisGetType } from "../../apis/madamis";
+import { AppType } from "../../api";
 
-const client = hc<MadamisGetType>;
+const client = hc<AppType>;
 
 export const useMadamisList = () => {
-  const { data, mutate } = useSWR("api/madamis/", (path) =>
-    client(path)
-      .index.$get()
+  const { data, mutate } = useSWR("/api/madamis", (path) =>
+    client("/api")
+      .madamis.$get()
       .then((res) => res.json())
   );
 

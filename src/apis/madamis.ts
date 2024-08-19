@@ -5,17 +5,6 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 
-export const madamisApi = new Hono<{ Bindings: Env }>();
-
-const madamisGet = madamisApi.get("/", async (c) => {
-  const db = drizzle(c.env.DB);
-
-  const result = await db.select().from(madamis);
-  return c.json(result);
-});
-
-export type MadamisGetType = typeof madamisGet;
-
 const madamisPostSchema = z.object({
   title: z.string().min(1),
   link: z.string().url(),
@@ -23,28 +12,27 @@ const madamisPostSchema = z.object({
   gmRequired: z.boolean().transform((b) => Number(b)),
 });
 
-const madamisPost = madamisApi.post(
-  "/",
-  zValidator("json", madamisPostSchema),
-  async (c) => {
+const madamisPutSchema = madamisPostSchema.extend({
+  id: z.number().int(),
+});
+
+const madamisApi = new Hono<{ Bindings: Env }>();
+
+export const madamisApp = madamisApi
+  .get("/", async (c) => {
+    const db = drizzle(c.env.DB);
+
+    const result = await db.select().from(madamis);
+    return c.json(result);
+  })
+  .post("/", zValidator("json", madamisPostSchema), async (c) => {
     const db = drizzle(c.env.DB);
     const body = c.req.valid("json");
 
     const [result] = await db.insert(madamis).values(body).returning();
     return c.json(result);
-  }
-);
-
-export type MadamisPostType = typeof madamisPost;
-
-const madamisPutSchema = madamisPostSchema.extend({
-  id: z.number().int(),
-});
-
-const madamisPut = madamisApi.put(
-  "/",
-  zValidator("json", madamisPutSchema),
-  async (c) => {
+  })
+  .put("/", zValidator("json", madamisPutSchema), async (c) => {
     const db = drizzle(c.env.DB);
     const body = c.req.valid("json");
 
@@ -54,17 +42,11 @@ const madamisPut = madamisApi.put(
       .where(eq(madamis.id, body.id))
       .returning();
     return c.json(result);
-  }
-);
+  })
+  .delete("/:id", async (c) => {
+    const db = drizzle(c.env.DB);
+    const id = c.req.param("id");
 
-export type MadamisPutType = typeof madamisPut;
-
-const madamisDelete = madamisApi.delete("/:id", async (c) => {
-  const db = drizzle(c.env.DB);
-  const id = c.req.param("id");
-
-  await db.delete(madamis).where(eq(madamis.id, parseInt(id)));
-  return new Response(null, { status: 204 });
-});
-
-export type MadamisDeleteType = typeof madamisDelete;
+    await db.delete(madamis).where(eq(madamis.id, parseInt(id)));
+    return new Response(null, { status: 204 });
+  });

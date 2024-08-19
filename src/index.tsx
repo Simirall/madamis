@@ -4,9 +4,7 @@ import { renderToString } from "react-dom/server";
 
 const app = new Hono();
 
-app.route("/api", api);
-
-app.get("*", (c) => {
+app.route("/api", api).get("*", (c) => {
   return c.html(
     renderToString(
       <html>

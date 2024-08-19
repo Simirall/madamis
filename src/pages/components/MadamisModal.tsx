@@ -13,14 +13,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { hc } from "hono/client";
-import {
-  MadamisDeleteType,
-  MadamisPostType,
-  MadamisPutType,
-} from "../../apis/madamis";
 import { useMadamisList } from "../hooks/useMadamisList";
 import { useMadamisModalStore } from "../stores/madamisModalStore";
 import { useEffect } from "react";
+import { AppType } from "../../api";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -31,8 +27,7 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>;
 
-const postClient = hc<MadamisPostType>("/api/madamis/");
-const putClient = hc<MadamisPutType>("/api/madamis/");
+const client = hc<AppType>("/api");
 
 export const MadamisModal = () => {
   const { open, close, madamisId } = useMadamisModalStore();
@@ -53,11 +48,11 @@ export const MadamisModal = () => {
 
   const onSubmit = async (data: FormSchema) => {
     if (madamisId) {
-      await putClient.index.$put({
+      await client.madamis.$put({
         json: { id: madamisId, ...data },
       });
     } else {
-      await postClient.index.$post({
+      await client.madamis.$post({
         json: data,
       });
     }
@@ -125,11 +120,12 @@ export const MadamisModal = () => {
 const DeleteMadamis = ({ madamisId }: { madamisId: number }) => {
   const [opened, { open, close }] = useDisclosure(false);
   const { close: closeMadamisModal } = useMadamisModalStore();
-  const deleteClient = hc<MadamisDeleteType>(`/api/madamis/`);
   const { mutate } = useMadamisList();
 
   const onDelete = async () => {
-    await deleteClient[":id"].$delete({ param: { id: madamisId.toString() } });
+    await client.madamis[":id"].$delete({
+      param: { id: madamisId.toString() },
+    });
     await mutate();
     close();
     closeMadamisModal();
