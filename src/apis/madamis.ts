@@ -58,3 +58,13 @@ const madamisPut = madamisApi.put(
 );
 
 export type MadamisPutType = typeof madamisPut;
+
+const madamisDelete = madamisApi.delete("/:id", async (c) => {
+  const db = drizzle(c.env.DB);
+  const id = c.req.param("id");
+
+  await db.delete(madamis).where(eq(madamis.id, parseInt(id)));
+  return new Response(null, { status: 204 });
+});
+
+export type MadamisDeleteType = typeof madamisDelete;

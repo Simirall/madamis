@@ -2,16 +2,22 @@ import {
   Button,
   Checkbox,
   Fieldset,
+  Group,
   Modal,
   NativeSelect,
   Stack,
   TextInput,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { hc } from "hono/client";
-import { MadamisPostType, MadamisPutType } from "../../apis/madamis";
+import {
+  MadamisDeleteType,
+  MadamisPostType,
+  MadamisPutType,
+} from "../../apis/madamis";
 import { useMadamisList } from "../hooks/useMadamisList";
 import { useMadamisModalStore } from "../stores/madamisModalStore";
 import { useEffect } from "react";
@@ -108,9 +114,48 @@ export const MadamisModal = () => {
             <Button mt="md" type="submit">
               {editData ? "更新" : "追加"}
             </Button>
+            {madamisId && <DeleteMadamis madamisId={madamisId} />}
           </Stack>
         </Fieldset>
       </form>
     </Modal>
+  );
+};
+
+const DeleteMadamis = ({ madamisId }: { madamisId: number }) => {
+  const [opened, { open, close }] = useDisclosure(false);
+  const { close: closeMadamisModal } = useMadamisModalStore();
+  const deleteClient = hc<MadamisDeleteType>(`/api/madamis/`);
+  const { mutate } = useMadamisList();
+
+  const onDelete = async () => {
+    await deleteClient[":id"].$delete({ param: { id: madamisId.toString() } });
+    await mutate();
+    close();
+    closeMadamisModal();
+  };
+
+  return (
+    <>
+      <Button color="red" variant="light" onClick={open}>
+        削除
+      </Button>
+      <Modal
+        opened={opened}
+        onClose={close}
+        centered
+        size="sm"
+        title="削除しますか？"
+      >
+        <Group>
+          <Button color="blue" variant="light" onClick={close}>
+            削除しない
+          </Button>
+          <Button color="red" onClick={onDelete}>
+            削除する
+          </Button>
+        </Group>
+      </Modal>
+    </>
   );
 };
