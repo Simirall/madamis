@@ -1,9 +1,11 @@
-import { Badge, Card, Group, NavLink, Stack } from "@mantine/core";
-import { Link } from "@phosphor-icons/react";
+import { ActionIcon, Badge, Card, Group, NavLink, Stack } from "@mantine/core";
+import { Link, PencilSimple } from "@phosphor-icons/react";
 import { useMadamisList } from "../hooks/useMadamisList";
+import { useMadamisModalStore } from "../stores/madamisModalStore";
 
 export const MadamisList = () => {
   const { data } = useMadamisList();
+  const { editOpen } = useMadamisModalStore();
 
   return (
     <>
@@ -38,11 +40,19 @@ export const MadamisList = () => {
                     color={d.gmRequired ? "orange" : "cyan"}
                     fw="normal"
                   >
-                    GM: {d.gmRequired ? "要" : "不要"}
+                    GM: {d.gmRequired ? "要" : "レス可"}
                   </Badge>
                   <Badge size="xl" color="violet" fw="normal">
                     PL: {d.player}人
                   </Badge>
+                  <ActionIcon size="lg" radius="xl" variant="light">
+                    <PencilSimple
+                      fontSize="1.4rem"
+                      onClick={() => {
+                        editOpen(d.id);
+                      }}
+                    />
+                  </ActionIcon>
                 </Group>
               </Stack>
             </Card>

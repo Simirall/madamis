@@ -1,28 +1,11 @@
-import {
-  ActionIcon,
-  Box,
-  Button,
-  Checkbox,
-  Fieldset,
-  Modal,
-  NativeSelect,
-  Stack,
-  TextInput,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { useForm } from "react-hook-form";
+import { ActionIcon, Box } from "@mantine/core";
 import { Plus } from "@phosphor-icons/react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { hc } from "hono/client";
-import { MadamisPostType } from "../../apis/madamis";
-import { useMadamisList } from "../hooks/useMadamisList";
+import { useMadamisModalStore } from "../stores/madamisModalStore";
 
 export const AddMadamisButton = () => {
-  const [opened, { open, close }] = useDisclosure(false);
+  const { createOpen } = useMadamisModalStore();
   return (
     <>
-      <AddMadamisModal opened={opened} close={close} />
       <Box pos="fixed" bottom="0" right="0" p="sm">
         <ActionIcon
           variant="filled"
@@ -30,95 +13,11 @@ export const AddMadamisButton = () => {
           size="xl"
           radius="xl"
           aria-label="Add Madamis"
-          onClick={open}
+          onClick={createOpen}
         >
           <Plus fontSize="1.6rem" />
         </ActionIcon>
       </Box>
     </>
-  );
-};
-
-const formSchema = z.object({
-  title: z.string().min(1),
-  link: z.string().url(),
-  player: z.coerce.number().int().min(1).max(6),
-  gmRequired: z.boolean(),
-});
-
-type FormSchema = z.infer<typeof formSchema>;
-
-const client = hc<MadamisPostType>("/api/madamis/");
-
-const AddMadamisModal = ({
-  opened,
-  close,
-}: {
-  opened: boolean;
-  close: () => void;
-}) => {
-  const { mutate } = useMadamisList();
-
-  const {
-    register,
-    reset,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
-  });
-
-  const onSubmit = async (data: FormSchema) => {
-    await client.index.$post({
-      json: data,
-    });
-    await mutate();
-    close();
-    reset();
-  };
-
-  return (
-    <Modal
-      opened={opened}
-      onClose={close}
-      title="マダミスを追加"
-      centered
-      closeOnClickOutside={false}
-    >
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Fieldset legend="マダミス情報">
-          <Stack>
-            <TextInput
-              label="タイトル"
-              placeholder="上田山脈 陰謀の分水嶺"
-              {...register("title")}
-              error={errors.title?.message}
-            />
-            <TextInput
-              label="リンク"
-              placeholder="https://example.booth.pm"
-              {...register("link")}
-              error={errors.link?.message}
-            />
-            <NativeSelect
-              label="PL人数"
-              data={["1", "2", "3", "4", "5", "6"]}
-              defaultValue="4"
-              {...register("player")}
-              error={errors.player?.message}
-            />
-            <Checkbox
-              defaultChecked
-              label="GM必須"
-              {...register("gmRequired")}
-              error={errors.gmRequired?.message}
-            />
-            <Button mt="md" type="submit">
-              追加
-            </Button>
-          </Stack>
-        </Fieldset>
-      </form>
-    </Modal>
   );
 };

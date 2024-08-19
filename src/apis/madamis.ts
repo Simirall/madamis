@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { madamis } from "../../schema";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { eq } from "drizzle-orm";
 
 export const madamisApi = new Hono<{ Bindings: Env }>();
 
@@ -15,7 +16,7 @@ const madamisGet = madamisApi.get("/", async (c) => {
 
 export type MadamisGetType = typeof madamisGet;
 
-const madamisSchema = z.object({
+const madamisPostSchema = z.object({
   title: z.string().min(1),
   link: z.string().url(),
   player: z.number().int().min(1).max(6),
@@ -24,14 +25,36 @@ const madamisSchema = z.object({
 
 const madamisPost = madamisApi.post(
   "/",
-  zValidator("json", madamisSchema),
+  zValidator("json", madamisPostSchema),
   async (c) => {
     const db = drizzle(c.env.DB);
     const body = c.req.valid("json");
 
-    await db.insert(madamis).values(body);
-    return c.json(body);
+    const [result] = await db.insert(madamis).values(body).returning();
+    return c.json(result);
   }
 );
 
 export type MadamisPostType = typeof madamisPost;
+
+const madamisPutSchema = madamisPostSchema.extend({
+  id: z.number().int(),
+});
+
+const madamisPut = madamisApi.put(
+  "/",
+  zValidator("json", madamisPutSchema),
+  async (c) => {
+    const db = drizzle(c.env.DB);
+    const body = c.req.valid("json");
+
+    const [result] = await db
+      .update(madamis)
+      .set(body)
+      .where(eq(madamis.id, body.id))
+      .returning();
+    return c.json(result);
+  }
+);
+
+export type MadamisPutType = typeof madamisPut;
