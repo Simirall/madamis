@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { hc } from "hono/client";
 import { useMadamisList } from "../hooks/useMadamisList";
 import { useMadamisModalStore } from "../stores/madamisModalStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AppType } from "../../api";
 
 const formSchema = z.object({
@@ -30,8 +30,10 @@ type FormSchema = z.infer<typeof formSchema>;
 const client = hc<AppType>("/api");
 
 export const MadamisModal = () => {
-  const { open, close, madamisId } = useMadamisModalStore();
   const { data, mutate } = useMadamisList();
+
+  const { open, close, madamisId } = useMadamisModalStore();
+  const [loading, setLoading] = useState(false);
 
   const editData = madamisId
     ? data?.find((d) => d.id === madamisId)
@@ -47,6 +49,7 @@ export const MadamisModal = () => {
   });
 
   const onSubmit = async (data: FormSchema) => {
+    setLoading(true);
     if (madamisId) {
       await client.madamis.$put({
         json: { id: madamisId, ...data },
@@ -58,7 +61,7 @@ export const MadamisModal = () => {
     }
     await mutate();
     close();
-    reset();
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -106,10 +109,12 @@ export const MadamisModal = () => {
               {...register("gmRequired")}
               error={errors.gmRequired?.message}
             />
-            <Button mt="md" type="submit">
+            <Button mt="md" type="submit" loading={loading}>
               {editData ? "更新" : "追加"}
             </Button>
-            {madamisId && <DeleteMadamis madamisId={madamisId} />}
+            {madamisId && (
+              <DeleteMadamis madamisId={madamisId} parentLoading={loading} />
+            )}
           </Stack>
         </Fieldset>
       </form>
@@ -117,12 +122,21 @@ export const MadamisModal = () => {
   );
 };
 
-const DeleteMadamis = ({ madamisId }: { madamisId: number }) => {
-  const [opened, { open, close }] = useDisclosure(false);
+const DeleteMadamis = ({
+  madamisId,
+  parentLoading,
+}: {
+  madamisId: number;
+  parentLoading: boolean;
+}) => {
   const { close: closeMadamisModal } = useMadamisModalStore();
   const { mutate } = useMadamisList();
 
+  const [opened, { open, close }] = useDisclosure(false);
+  const [loading, setLoading] = useState(false);
+
   const onDelete = async () => {
+    setLoading(true);
     await client.madamis[":id"].$delete({
       param: { id: madamisId.toString() },
     });
@@ -133,7 +147,12 @@ const DeleteMadamis = ({ madamisId }: { madamisId: number }) => {
 
   return (
     <>
-      <Button color="red" variant="light" onClick={open}>
+      <Button
+        color="red"
+        variant="light"
+        onClick={open}
+        loading={parentLoading}
+      >
         削除
       </Button>
       <Modal
@@ -144,10 +163,15 @@ const DeleteMadamis = ({ madamisId }: { madamisId: number }) => {
         title="削除しますか？"
       >
         <Group>
-          <Button color="blue" variant="light" onClick={close}>
+          <Button
+            color="blue"
+            variant="light"
+            onClick={close}
+            loading={loading}
+          >
             削除しない
           </Button>
-          <Button color="red" onClick={onDelete}>
+          <Button color="red" onClick={onDelete} loading={loading}>
             削除する
           </Button>
         </Group>
