@@ -5,6 +5,8 @@ export const madamis = sqliteTable("Madamis", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   link: text("link").notNull(),
+  player: integer("player").notNull(),
+  gmRequired: integer("gmRequired").notNull(),
 });
 
 export const madamisRelations = relations(madamis, ({ many }) => ({
