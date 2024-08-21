@@ -193,6 +193,10 @@ export const GameModal = () => {
                 }
               }}
               label="開催日"
+              weekdayFormat="ddd"
+              monthsListFormat="MM"
+              decadeLabelFormat="YYYY"
+              monthLabelFormat="YYYY/MM"
               valueFormat="YYYY/MM/DD"
               firstDayOfWeek={0}
               error={errors.date?.message}
