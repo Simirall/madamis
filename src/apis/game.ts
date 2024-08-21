@@ -1,9 +1,9 @@
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import { games, gameUsers } from "../../schema";
+import { games, gameUsers, madamis } from "../../schema";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 const gamesPostSchema = z.object({
   madamisId: z.number().int(),
@@ -52,7 +52,25 @@ export const gamesApp = gamesApi
     const db = drizzle(c.env.DB);
     const body = c.req.valid("json");
 
+    // TODO: ちゃんとしたいところだが..
+    await db.delete(gameUsers).where(eq(gameUsers.gameId, body.id));
+    await db.insert(gameUsers).values([
+      {
+        userId: body.gm,
+        gameId: body.id,
+        gm: 1,
+      },
+      ...body.players
+        .filter((u) => u !== body.gm)
+        .map((p) => ({
+          userId: p,
+          gameId: body.id,
+          gm: 0,
+        })),
+    ]);
+
     await db.update(games).set(body).where(eq(games.id, body.id));
+
     return new Response(null, { status: 204 });
   })
   .delete("/:id", async (c) => {
