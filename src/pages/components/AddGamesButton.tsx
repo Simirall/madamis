@@ -15,7 +15,10 @@ export const AddGameButton = ({ madamisId }: { madamisId: number }) => {
 
   return (
     <>
-      {madamis && users && users.length - playedPlayers > madamis.player ? (
+      {madamis &&
+      users &&
+      users.length - playedPlayers + (madamis.gmRequired ? 0 : 1) >
+        madamis.player ? (
         <Button
           variant="light"
           onClick={() => {
