@@ -26,7 +26,7 @@ const client = hc<AppType>("/api");
 
 export const GameModal = () => {
   const { data: users } = useUser();
-  const { data: madamisList } = useMadamisList();
+  const { data: madamisList, mutate } = useMadamisList();
 
   const { open, close, gameId, madamisId } = useGameModalStore();
   const [loading, setLoading] = useState(false);
@@ -39,7 +39,13 @@ export const GameModal = () => {
     () => (users ? users.map((u) => u.id.toString()) : []),
     [users]
   );
-  const editData = gameId ? gameId : undefined;
+  const editData = useMemo(
+    () =>
+      gameId && madamisId
+        ? madamisList?.find((m) => m.games.find((g) => g.id === gameId))?.games
+        : undefined,
+    [gameId, madamisId, madamisList]
+  );
 
   const formSchema = z.object({
     players: z.array(z.string()).length(madamis?.player ?? 0),
@@ -58,11 +64,21 @@ export const GameModal = () => {
     formState: { errors },
   } = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
+    defaultValues: {},
   });
 
   const onSubmit = async (data: FormSchema) => {
-    console.log(data);
     setLoading(true);
+    const reqObj = {
+      madamisId: madamisId!,
+      date: data.date.toISOString(),
+      gm: parseInt(data.gm),
+      players: data.players.map((p) => parseInt(p)),
+    };
+    await client.games.$post({
+      json: reqObj,
+    });
+    await mutate();
     close();
     setLoading(false);
   };

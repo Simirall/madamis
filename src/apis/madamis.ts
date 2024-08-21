@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import { madamis } from "../../schema";
+import { games, gameUsers, madamis, users } from "../../schema";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
@@ -22,7 +22,38 @@ export const madamisApp = madamisApi
   .get("/", async (c) => {
     const db = drizzle(c.env.DB);
 
-    const result = await db.select().from(madamis);
+    // TODO: SQLを勉強すべき
+    const madamisList = await db.select().from(madamis);
+    const gameList = await db.select().from(games);
+    const gameUserList = await Promise.all(
+      gameList.map((g) =>
+        db
+          .select()
+          .from(gameUsers)
+          .where(eq(gameUsers.gameId, g.id))
+          .leftJoin(users, eq(gameUsers.userId, users.id))
+      )
+    );
+
+    const result = madamisList.map((m) => {
+      return {
+        ...m,
+        games: gameList
+          .filter((g) => g.madamisId === m.id)
+          .map((g) => ({
+            ...g,
+            gameUsers: gameUserList
+              .filter((gu) => gu[0].GameUsers.gameId === g.id)
+              .flatMap((gu) =>
+                gu.map((u) => ({
+                  ...u.Users!,
+                  gm: Boolean(u.GameUsers.gm),
+                }))
+              ),
+          })),
+      };
+    });
+
     return c.json(result);
   })
   .post("/", zValidator("json", madamisPostSchema), async (c) => {

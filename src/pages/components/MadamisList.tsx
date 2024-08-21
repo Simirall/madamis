@@ -3,6 +3,8 @@ import { Link, PencilSimple } from "@phosphor-icons/react";
 import { useMadamisList } from "../hooks/useMadamisList";
 import { useMadamisModalStore } from "../stores/madamisModalStore";
 import { AddGameButton } from "./AddGamesButton";
+import { GameState } from "./GameState";
+import { Fragment } from "react/jsx-runtime";
 
 export const MadamisList = () => {
   const { data } = useMadamisList();
@@ -51,6 +53,15 @@ export const MadamisList = () => {
                     />
                   </ActionIcon>
                 </Group>
+                {d.games.length > 0 && (
+                  <Stack>
+                    {d.games.map((g) => (
+                      <Fragment key={g.id}>
+                        <GameState game={g} madamisId={d.id} />
+                      </Fragment>
+                    ))}
+                  </Stack>
+                )}
                 <AddGameButton madamisId={d.id} />
               </Stack>
             </Card>
