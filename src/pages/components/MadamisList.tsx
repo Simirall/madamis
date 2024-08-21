@@ -19,24 +19,22 @@ export const MadamisList = () => {
               key={d.id}
               w="20rem"
               shadow="sm"
-              padding="lg"
+              p="md"
               radius="md"
               withBorder
             >
               <Stack>
-                <Group>
-                  <NavLink
-                    href={d.link}
-                    target="_blank"
-                    label={d.title}
-                    variant="subtle"
-                    active
-                    leftSection={<Link fontSize="1.4rem" />}
-                    style={{
-                      borderRadius: "4px",
-                    }}
-                  />
-                </Group>
+                <NavLink
+                  href={d.link}
+                  target="_blank"
+                  label={d.title}
+                  variant="subtle"
+                  active
+                  leftSection={<Link fontSize="1.4rem" />}
+                  style={{
+                    borderRadius: "4px",
+                  }}
+                />
                 <Group>
                   <Badge size="xl" color={d.gmRequired ? "orange" : "cyan"}>
                     GM: {d.gmRequired ? "要" : "レス可"}
@@ -62,7 +60,7 @@ export const MadamisList = () => {
                     ))}
                   </Stack>
                 )}
-                <AddGameButton madamisId={d.id} />
+                {Boolean(d.bought) && <AddGameButton madamisId={d.id} />}
               </Stack>
             </Card>
           ))}

@@ -23,6 +23,7 @@ const formSchema = z.object({
   link: z.string().url(),
   player: z.coerce.number().int().min(1).max(6),
   gmRequired: z.boolean(),
+  bought: z.boolean(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -108,6 +109,12 @@ export const MadamisModal = () => {
               label="GM必須"
               {...register("gmRequired")}
               error={errors.gmRequired?.message}
+            />
+            <Checkbox
+              defaultChecked={Boolean(editData?.bought)}
+              label="購入済み"
+              {...register("bought")}
+              error={errors.bought?.message}
             />
             <Button mt="md" type="submit" loading={loading}>
               {editData ? "更新" : "追加"}

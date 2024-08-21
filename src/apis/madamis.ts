@@ -10,6 +10,7 @@ const madamisPostSchema = z.object({
   link: z.string().url(),
   player: z.number().int().min(1).max(6),
   gmRequired: z.boolean().transform((b) => Number(b)),
+  bought: z.boolean().transform((b) => Number(b)),
 });
 
 const madamisPutSchema = madamisPostSchema.extend({
@@ -60,19 +61,15 @@ export const madamisApp = madamisApi
     const db = drizzle(c.env.DB);
     const body = c.req.valid("json");
 
-    const [result] = await db.insert(madamis).values(body).returning();
-    return c.json(result);
+    await db.insert(madamis).values(body);
+    return new Response(null, { status: 204 });
   })
   .put("/", zValidator("json", madamisPutSchema), async (c) => {
     const db = drizzle(c.env.DB);
     const body = c.req.valid("json");
 
-    const [result] = await db
-      .update(madamis)
-      .set(body)
-      .where(eq(madamis.id, body.id))
-      .returning();
-    return c.json(result);
+    await db.update(madamis).set(body).where(eq(madamis.id, body.id));
+    return new Response(null, { status: 204 });
   })
   .delete("/:id", async (c) => {
     const db = drizzle(c.env.DB);
