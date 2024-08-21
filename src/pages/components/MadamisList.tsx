@@ -2,6 +2,7 @@ import { ActionIcon, Badge, Card, Group, NavLink, Stack } from "@mantine/core";
 import { Link, PencilSimple } from "@phosphor-icons/react";
 import { useMadamisList } from "../hooks/useMadamisList";
 import { useMadamisModalStore } from "../stores/madamisModalStore";
+import { AddGameButton } from "./AddGamesButton";
 
 export const MadamisList = () => {
   const { data } = useMadamisList();
@@ -9,7 +10,7 @@ export const MadamisList = () => {
 
   return (
     <>
-      <Group p="md">
+      <Group p="md" justify="center">
         {data &&
           data.map((d) => (
             <Card
@@ -50,6 +51,7 @@ export const MadamisList = () => {
                     />
                   </ActionIcon>
                 </Group>
+                <AddGameButton madamisId={d.id} />
               </Stack>
             </Card>
           ))}

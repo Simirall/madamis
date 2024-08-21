@@ -1,6 +1,4 @@
 import { createRoot } from "react-dom/client";
-
-import "@mantine/core/styles.css";
 import {
   Badge,
   Button,
@@ -9,6 +7,9 @@ import {
   Title,
 } from "@mantine/core";
 import { App } from "./pages/App";
+
+import "@mantine/core/styles.css";
+import "@mantine/dates/styles.css";
 
 const theme = createTheme({
   components: {
