@@ -21,6 +21,7 @@ const theme = createTheme({
     Badge: Badge.extend({
       defaultProps: {
         fw: "normal",
+        tt: "none",
       },
     }),
     Title: Title.extend({
