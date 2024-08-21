@@ -59,11 +59,7 @@ export const GameModal = () => {
     () =>
       madamis?.games
         .filter((g) => (gameId ? g.id !== gameId : true))
-        .flatMap((g) =>
-          g.gameUsers
-            .filter((u) => (madamis.gmRequired ? !u.gm : true))
-            .map((u) => u.id.toString())
-        ),
+        .flatMap((g) => g.gameUsers.map((u) => u.id.toString())),
     [madamis]
   );
 
@@ -168,31 +164,17 @@ export const GameModal = () => {
                     }}
                   >
                     <Group gap="sm" justify="center">
-                      {madamis.gmRequired
-                        ? users
-                            .filter(
-                              (u) =>
-                                u.id.toString() !== watch("gm") &&
-                                !playersToRemove?.includes(u.id.toString())
-                            )
-                            .map((u) => (
-                              <Chip
-                                value={u.id.toString()}
-                                key={u.id}
-                                color="teal"
-                              >
-                                {u.name}
-                              </Chip>
-                            ))
-                        : users.map((u) => (
-                            <Chip
-                              value={u.id.toString()}
-                              key={u.id}
-                              color="teal"
-                            >
-                              {u.name}
-                            </Chip>
-                          ))}
+                      {users
+                        .filter(
+                          (u) =>
+                            u.id.toString() !== watch("gm") &&
+                            !playersToRemove?.includes(u.id.toString())
+                        )
+                        .map((u) => (
+                          <Chip value={u.id.toString()} key={u.id} color="teal">
+                            {u.name}
+                          </Chip>
+                        ))}
                     </Group>
                   </Chip.Group>
                   {errors.players && (
