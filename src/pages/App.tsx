@@ -10,7 +10,7 @@ export const App = () => {
     <>
       <Header />
       <AddMadamisButton />
-      <Container size="lg">
+      <Container size="100%">
         <MadamisList />
       </Container>
       <MadamisModal />
