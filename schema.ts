@@ -18,7 +18,9 @@ export const games = sqliteTable("Games", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   date: text("date").notNull(),
 
-  madamisId: integer("madamisId").references(() => madamis.id),
+  madamisId: integer("madamisId")
+    .references(() => madamis.id)
+    .notNull(),
 });
 
 export const gamesRelations = relations(games, ({ many }) => ({
@@ -39,6 +41,10 @@ export const gameUsers = sqliteTable("GameUsers", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   gm: integer("gm").notNull(),
 
-  gameId: integer("gameId").references(() => games.id),
-  userId: integer("userId").references(() => users.id),
+  gameId: integer("gameId")
+    .references(() => games.id)
+    .notNull(),
+  userId: integer("userId")
+    .references(() => users.id)
+    .notNull(),
 });
