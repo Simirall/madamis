@@ -59,13 +59,11 @@ export const GameModal = () => {
     () =>
       madamis?.games
         .filter((g) => (gameId ? g.id !== gameId : true))
-        .flatMap((g) =>
-          g.gameUsers
-            .filter((u) => (!madamis.gmRequired ? !u.gm : true))
-            .map((u) => u.id.toString())
-        ),
-    [madamis]
+        .flatMap((g) => g.gameUsers.map((u) => u.id.toString())),
+    [madamis, gameId]
   );
+
+  console.log(madamis?.games);
 
   const formSchema = z.object({
     players: z.array(z.string()).length(madamis?.player ?? 0),
@@ -170,7 +168,12 @@ export const GameModal = () => {
                     <Group gap="sm" justify="center">
                       {users
                         .filter(
-                          (u) => !playersToRemove?.includes(u.id.toString())
+                          (u) =>
+                            !playersToRemove?.includes(u.id.toString()) &&
+                            !(
+                              madamis.gmRequired &&
+                              u.id === parseInt(watch("gm"))
+                            )
                         )
                         .map((u) => (
                           <Chip value={u.id.toString()} key={u.id} color="teal">
