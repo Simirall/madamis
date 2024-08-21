@@ -53,7 +53,18 @@ export const GameModal = () => {
       editData?.gameUsers
         .filter((u) => (!madamis?.gmRequired ? u : !u.gm))
         .map((u) => u.id.toString()) ?? [],
-    [editData]
+    [madamis, editData]
+  );
+  const playersToRemove = useMemo(
+    () =>
+      madamis?.games
+        .filter((g) => (gameId ? g.id !== gameId : true))
+        .flatMap((g) =>
+          g.gameUsers
+            .filter((u) => (madamis.gmRequired ? !u.gm : true))
+            .map((u) => u.id.toString())
+        ),
+    [madamis]
   );
 
   const formSchema = z.object({
@@ -159,7 +170,11 @@ export const GameModal = () => {
                     <Group gap="sm" justify="center">
                       {madamis.gmRequired
                         ? users
-                            .filter((u) => u.id.toString() !== watch("gm"))
+                            .filter(
+                              (u) =>
+                                u.id.toString() !== watch("gm") &&
+                                !playersToRemove?.includes(u.id.toString())
+                            )
                             .map((u) => (
                               <Chip
                                 value={u.id.toString()}
