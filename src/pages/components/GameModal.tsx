@@ -35,16 +35,25 @@ export const GameModal = () => {
     () => madamisList?.find((m) => m.id === madamisId),
     [madamisList, madamisId]
   );
-  const userIds: Array<string> = useMemo(
+  const userIds = useMemo(
     () => (users ? users.map((u) => u.id.toString()) : []),
     [users]
   );
   const editData = useMemo(
     () =>
-      gameId && madamisId
-        ? madamisList?.find((m) => m.games.find((g) => g.id === gameId))?.games
+      gameId
+        ? madamisList
+            ?.find((m) => m.games.find((g) => g.id === gameId))
+            ?.games.find((g) => g.id === gameId)
         : undefined,
-    [gameId, madamisId, madamisList]
+    [gameId, madamisList]
+  );
+  const defaultPlayers = useMemo(
+    () =>
+      editData?.gameUsers
+        .filter((u) => (!madamis?.gmRequired ? u : !u.gm))
+        .map((u) => u.id.toString()) ?? [],
+    [editData]
   );
 
   const formSchema = z.object({
@@ -64,7 +73,6 @@ export const GameModal = () => {
     formState: { errors },
   } = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
   });
 
   const onSubmit = async (data: FormSchema) => {
@@ -75,20 +83,27 @@ export const GameModal = () => {
       gm: parseInt(data.gm),
       players: data.players.map((p) => parseInt(p)),
     };
-    await client.games.$post({
-      json: reqObj,
-    });
+    if (gameId) {
+      await client.games.$put({
+        json: { id: gameId!, ...reqObj },
+      });
+    } else {
+      await client.games.$post({
+        json: reqObj,
+      });
+    }
     await mutate();
     close();
+    reset();
     setLoading(false);
   };
 
   useEffect(() => {
-    setValue("players", []);
-  }, [watch("gm")]);
-
-  useEffect(() => {
     reset();
+    if (editData) {
+      setValue("players", defaultPlayers);
+      setValue("date", new Date(editData.date));
+    }
   }, [gameId, open]);
 
   return (
@@ -126,6 +141,9 @@ export const GameModal = () => {
                     label: u.name,
                     value: u.id.toString(),
                   }))}
+                  defaultValue={editData?.gameUsers
+                    .find((u) => u.gm)
+                    ?.id.toString()}
                   {...register("gm")}
                   error={errors.gm?.message}
                 />
@@ -139,7 +157,7 @@ export const GameModal = () => {
                     }}
                   >
                     <Group gap="sm" justify="center">
-                      {watch("gm") !== "0" && madamis.gmRequired
+                      {madamis.gmRequired
                         ? users
                             .filter((u) => u.id.toString() !== watch("gm"))
                             .map((u) => (
@@ -185,6 +203,7 @@ export const GameModal = () => {
             <Button mt="md" type="submit" loading={loading}>
               {editData ? "更新" : "追加"}
             </Button>
+            {gameId && <DeleteGame gameId={gameId} parentLoading={loading} />}
           </Stack>
         </Fieldset>
       </form>
@@ -200,12 +219,17 @@ const DeleteGame = ({
   parentLoading: boolean;
 }) => {
   const { close: closeGameModal } = useGameModalStore();
+  const { mutate } = useMadamisList();
 
   const [opened, { open, close }] = useDisclosure(false);
   const [loading, setLoading] = useState(false);
 
   const onDelete = async () => {
     setLoading(true);
+    await client.games[":id"].$delete({
+      param: { id: gameId.toString() },
+    });
+    await mutate();
     close();
     closeGameModal();
   };

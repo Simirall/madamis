@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { games, gameUsers } from "../../schema";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { eq } from "drizzle-orm";
 
 const gamesPostSchema = z.object({
   madamisId: z.number().int(),
@@ -17,10 +18,8 @@ const gamesPutSchema = gamesPostSchema.extend({
 
 const gamesApi = new Hono<{ Bindings: Env }>();
 
-export const gamesApp = gamesApi.post(
-  "/",
-  zValidator("json", gamesPostSchema),
-  async (c) => {
+export const gamesApp = gamesApi
+  .post("/", zValidator("json", gamesPostSchema), async (c) => {
     const db = drizzle(c.env.DB);
     const body = c.req.valid("json");
 
@@ -38,31 +37,29 @@ export const gamesApp = gamesApi.post(
         gameId: gameResult.id,
         gm: 1,
       },
-      ...body.players.map((p) => ({
-        userId: p,
-        gameId: gameResult.id,
-        gm: 0,
-      })),
+      ...body.players
+        .filter((u) => u !== body.gm)
+        .map((p) => ({
+          userId: p,
+          gameId: gameResult.id,
+          gm: 0,
+        })),
     ]);
 
     return new Response(null, { status: 204 });
-  }
-);
-// .put("/", zValidator("json", gamesPutSchema), async (c) => {
-//   const db = drizzle(c.env.DB);
-//   const body = c.req.valid("json");
+  })
+  .put("/", zValidator("json", gamesPutSchema), async (c) => {
+    const db = drizzle(c.env.DB);
+    const body = c.req.valid("json");
 
-//   const [result] = await db
-//     .update(games)
-//     .set(body)
-//     .where(eq(games.id, body.id))
-//     .returning();
-//   return c.json(result);
-// })
-// .delete("/:id", async (c) => {
-//   const db = drizzle(c.env.DB);
-//   const id = c.req.param("id");
+    await db.update(games).set(body).where(eq(games.id, body.id));
+    return new Response(null, { status: 204 });
+  })
+  .delete("/:id", async (c) => {
+    const db = drizzle(c.env.DB);
+    const id = c.req.param("id");
 
-//   await db.delete(games).where(eq(games.id, parseInt(id)));
-//   return new Response(null, { status: 204 });
-// });
+    await db.delete(gameUsers).where(eq(gameUsers.gameId, parseInt(id)));
+    await db.delete(games).where(eq(games.id, parseInt(id)));
+    return new Response(null, { status: 204 });
+  });
