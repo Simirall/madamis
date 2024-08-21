@@ -6,7 +6,15 @@ export const AddMadamisButton = () => {
   const { createOpen } = useMadamisModalStore();
   return (
     <>
-      <Box pos="fixed" bottom="0" right="0" p="sm">
+      <Box
+        pos="fixed"
+        bottom="0"
+        right="0"
+        p="sm"
+        style={{
+          zIndex: 1,
+        }}
+      >
         <ActionIcon
           variant="filled"
           color="orange"
