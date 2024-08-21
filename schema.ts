@@ -7,6 +7,7 @@ export const madamis = sqliteTable("Madamis", {
   link: text("link").notNull(),
   player: integer("player").notNull(),
   gmRequired: integer("gmRequired").notNull(),
+  bought: integer("bought").notNull(),
 });
 
 export const madamisRelations = relations(madamis, ({ many }) => ({

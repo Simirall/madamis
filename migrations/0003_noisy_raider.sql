@@ -1,0 +1,1 @@
+ALTER TABLE `Madamis` ADD `bought` integer NOT NULL;
