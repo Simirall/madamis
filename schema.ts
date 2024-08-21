@@ -36,6 +36,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const gameUsers = sqliteTable("GameUsers", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  gm: integer("gm").notNull(),
 
   gameId: integer("gameId").references(() => games.id),
   userId: integer("userId").references(() => users.id),
