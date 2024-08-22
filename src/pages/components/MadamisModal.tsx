@@ -18,16 +18,6 @@ import { useMadamisModalStore } from "../stores/madamisModalStore";
 import { useEffect, useState } from "react";
 import { AppType } from "../../api";
 
-const formSchema = z.object({
-  title: z.string().min(1),
-  link: z.string().url(),
-  player: z.coerce.number().int().min(1).max(6),
-  gmRequired: z.boolean(),
-  bought: z.boolean(),
-});
-
-type FormSchema = z.infer<typeof formSchema>;
-
 const client = hc<AppType>("/api");
 
 export const MadamisModal = () => {
@@ -39,6 +29,28 @@ export const MadamisModal = () => {
   const editData = madamisId
     ? data?.find((d) => d.id === madamisId)
     : undefined;
+
+  const formSchema = z.object({
+    title: z.string().min(1),
+    link: z
+      .string()
+      .url()
+      .refine(
+        (v) =>
+          !data
+            ?.filter((d) => (madamisId ? d.id !== madamisId : true))
+            .map((d) => d.link)
+            .includes(v),
+        {
+          message: "Already exists",
+        }
+      ),
+    player: z.coerce.number().int().min(1).max(6),
+    gmRequired: z.boolean(),
+    bought: z.boolean(),
+  });
+
+  type FormSchema = z.infer<typeof formSchema>;
 
   const {
     register,
