@@ -108,7 +108,12 @@ export const MadamisList = () => {
                     <Badge size="xl" color="violet">
                       PL: {d.player}人
                     </Badge>
-                    <ActionIcon size="lg" radius="xl" variant="light">
+                    <ActionIcon
+                      size="lg"
+                      radius="xl"
+                      variant="light"
+                      disabled={d.games.length > 0}
+                    >
                       <PencilSimple
                         fontSize="1.4rem"
                         onClick={() => {
