@@ -4,7 +4,7 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const madamis = sqliteTable("Madamis", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
-  link: text("link").notNull(),
+  link: text("link").notNull().unique(),
   player: integer("player").notNull(),
   gmRequired: integer("gmRequired").notNull(),
   bought: integer("bought").notNull(),
