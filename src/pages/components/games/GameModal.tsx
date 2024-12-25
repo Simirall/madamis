@@ -1,23 +1,28 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Calendar } from "@yamada-ui/calendar";
 import {
-  Badge,
   Button,
-  Chip,
   Fieldset,
-  Group,
+  HStack,
+  Heading,
   Modal,
+  ModalBody,
+  ModalHeader,
   NativeSelect,
-  Stack,
+  Tag,
   Text,
-  Title,
-} from "@mantine/core";
-import { DateInput } from "@mantine/dates";
-import { hc } from "hono/client";
-import { type FC, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+  Toggle,
+  ToggleGroup,
+  VStack,
+  Wrap,
+} from "@yamada-ui/react";
+import { type InferResponseType, hc } from "hono/client";
+import type { FC } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import type { AppType } from "../../../api";
 import {
+  gm,
   gmRequired,
   gmRequiredBadgeColor,
   gmRole,
@@ -25,99 +30,55 @@ import {
 import { useMadamisList } from "../../hooks/useMadamisList";
 import { useUser } from "../../hooks/useUser";
 import { useGameModalStore } from "../../stores/gameModalStore";
-import { DeleteGameButton } from "./DeleteGameModal";
+import { Loader } from "../Loader";
+import "dayjs/locale/ja";
 
 const client = hc<AppType>("/api");
 
 export const GameModal = () => {
   const { data: madamisList } = useMadamisList();
+  const { data: users } = useUser();
 
-  const { open, close, gameId } = useGameModalStore();
+  const { open, onClose, madamisId } = useGameModalStore();
 
-  const editData = useMemo(
-    () =>
-      gameId
-        ? madamisList
-            ?.find((m) => m.games.find((g) => g.id === gameId))
-            ?.games.find((g) => g.id === gameId)
-        : undefined,
-    [gameId, madamisList],
-  );
+  const madamis = madamisList?.find((m) => m.id === madamisId);
+  const userIds = users?.map((u) => u.id.toString());
 
   return (
     <Modal
-      opened={open}
+      open={open}
       onClose={() => {
-        close();
+        onClose();
       }}
-      title={`試合を${editData ? "編集" : "追加"}`}
-      centered
-      closeOnClickOutside={false}
+      closeOnOverlay={false}
       size="lg"
     >
-      <GameForm editData={editData} />
+      <ModalHeader>試合を追加</ModalHeader>
+      <ModalBody>
+        {!madamis || !users || !userIds ? (
+          <Loader />
+        ) : (
+          <GameForm madamis={madamis} userIds={userIds} users={users} />
+        )}
+      </ModalBody>
     </Modal>
   );
 };
 
 const GameForm: FC<{
-  editData?: {
-    id: number;
-    madamisId: number;
-    date: string;
-    gameUsers: ReadonlyArray<{
-      gm: number;
-      gameId: number;
-      userId: number;
-      user: {
-        id: number;
-        name: string;
-        color: string;
-      };
-    }>;
-  };
-}> = ({ editData }) => {
-  const { data: users } = useUser();
-  const { data: madamisList, mutate } = useMadamisList();
+  madamis: InferResponseType<typeof client.madamis.$get>[number];
+  users: InferResponseType<typeof client.user.$get>;
+  userIds: ReadonlyArray<string>;
+}> = ({ madamis, users, userIds }) => {
+  const { mutate } = useMadamisList();
+  const { onClose } = useGameModalStore();
 
-  const { open, close, gameId, madamisId } = useGameModalStore();
-  const [loading, setLoading] = useState(false);
-
-  const madamis = useMemo(
-    () => madamisList?.find((m) => m.id === madamisId),
-    [madamisList, madamisId],
-  );
-  const userIds = useMemo(
-    () => (users ? users.map((u) => u.id.toString()) : []),
-    [users],
-  );
-
-  const defaultPlayers = useMemo(
-    () =>
-      editData?.gameUsers
-        .filter((u) => {
-          if (madamis?.gmRequired !== 1) {
-            if (madamis?.player === editData.gameUsers.length) {
-              return true;
-            }
-            return !u.gm;
-          }
-          return !u.gm;
-        })
-        .map((u) => u.user.id.toString()) ?? [],
-    [madamis, editData],
-  );
-
-  const playersToRemove = useMemo(
-    () =>
-      madamis?.games
-        .filter((g) => (gameId ? g.id !== gameId : true))
-        .flatMap((g) => g.gameUsers.map((u) => u.user.id.toString())),
-    [madamis, gameId],
+  const playedPlayers = madamis.games.flatMap((g) =>
+    g.gameUsers.map((u) => u.user.id.toString()),
   );
 
   const formSchema = z.object({
-    players: z.array(z.string()).length(madamis?.player ?? 0),
+    players: z.array(z.string()).length(madamis.player),
     gm: z.string().refine((v) => userIds.includes(v)),
     date: z.date(),
   });
@@ -126,133 +87,122 @@ const GameForm: FC<{
 
   const {
     register,
+    control,
     watch,
     reset,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      gm: editData?.gameUsers.find((u) => u.gm)?.user.id.toString() ?? "1",
+      players: [],
+      gm: "1",
+      date: new Date(),
     },
   });
 
   const onSubmit = async (data: FormSchema) => {
-    setLoading(true);
     const reqObj = {
-      madamisId: madamisId!,
+      madamisId: madamis.id,
       date: data.date.toISOString(),
       gm: Number.parseInt(data.gm),
       players: data.players.map((p) => Number.parseInt(p)),
     };
-    if (gameId) {
-      await client.games.$put({
-        json: { id: gameId!, ...reqObj },
-      });
-    } else {
-      await client.games.$post({
-        json: reqObj,
-      });
-    }
+
+    await client.games.$post({
+      json: reqObj,
+    });
     await mutate();
-    close();
+    onClose();
     reset();
-    setLoading(false);
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    reset();
-    if (editData) {
-      setValue("players", defaultPlayers);
-      setValue("date", new Date(editData.date));
-    }
-  }, [gameId, open]);
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Fieldset legend="試合情報">
-        <Stack>
-          {madamis && users && (
-            <>
-              <Title order={3}>{madamis.title}</Title>
-              <Group>
-                <Badge
-                  size="xl"
-                  color={gmRequiredBadgeColor[madamis.gmRequired]}
-                >
-                  {gmRequired[madamis.gmRequired]}
-                </Badge>
-                <Badge size="xl" color="violet">
-                  PL: {madamis.player}人
-                </Badge>
-              </Group>
-              <NativeSelect
-                label={gmRole[madamis.gmRequired]}
-                data={users.map((u) => ({
-                  label: u.name,
-                  value: u.id.toString(),
-                }))}
-                {...register("gm")}
-                error={errors.gm?.message}
-              />
-              <Stack gap="sm">
-                <Text>プレイヤー</Text>
-                <Chip.Group
-                  multiple
-                  value={watch("players")}
-                  onChange={(e) => {
-                    setValue("players", e);
-                  }}
-                >
-                  <Group gap="sm" justify="center">
-                    {users
-                      .filter(
-                        (u) =>
-                          !playersToRemove?.includes(u.id.toString()) &&
-                          !(
-                            madamis.gmRequired === 1 &&
-                            u.id === Number.parseInt(watch("gm"))
-                          ),
-                      )
-                      .map((u) => (
-                        <Chip value={u.id.toString()} key={u.id} color="teal">
-                          {u.name}
-                        </Chip>
-                      ))}
-                  </Group>
-                </Chip.Group>
-                {errors.players && (
-                  <Text size="sm" c="red">
-                    {errors.players.message}
-                  </Text>
-                )}
-              </Stack>
-            </>
-          )}
-          <DateInput
-            value={watch("date")}
-            onChange={(e) => {
-              if (e) {
-                setValue("date", e);
-              }
-            }}
-            label="開催日"
-            weekdayFormat="ddd"
-            monthsListFormat="MM"
-            decadeLabelFormat="YYYY"
-            monthLabelFormat="YYYY/MM"
-            valueFormat="YYYY/MM/DD"
-            firstDayOfWeek={0}
-            error={errors.date?.message}
-          />
-          <Button mt="md" type="submit" loading={loading}>
-            {editData ? "更新" : "追加"}
-          </Button>
-          {gameId && <DeleteGameButton gameId={gameId} />}
-        </Stack>
+    <VStack as="form" onSubmit={handleSubmit(onSubmit)}>
+      <Heading>{madamis.title}</Heading>
+      <HStack>
+        <Tag size="lg" colorScheme={gmRequiredBadgeColor[madamis.gmRequired]}>
+          {gmRequired[madamis.gmRequired]}
+        </Tag>
+        <Tag size="lg" colorScheme="violet">
+          PL: {madamis.player}人
+        </Tag>
+      </HStack>
+      <Fieldset
+        legend={gmRole[madamis.gmRequired]}
+        invalid={!!errors.gm}
+        errorMessage={errors.gm?.message}
+      >
+        <NativeSelect
+          items={users.map((u) => ({
+            label: u.name,
+            value: u.id.toString(),
+          }))}
+          {...register("gm")}
+        />
       </Fieldset>
-    </form>
+      <VStack gap="sm">
+        <Text>プレイヤー</Text>
+        <ToggleGroup
+          value={watch("players")}
+          onChange={(e) => {
+            setValue("players", e);
+          }}
+          as={Wrap}
+          justifyContent="center"
+        >
+          {users
+            .filter(
+              (u) =>
+                !playedPlayers?.includes(u.id.toString()) &&
+                !(
+                  (
+                    madamis.gmRequired === gm.required &&
+                    u.id === Number.parseInt(watch("gm"))
+                  ) // GM必須の場合GMを除外
+                ),
+            )
+            .map((u) => (
+              <Toggle
+                key={u.id}
+                px="sm"
+                size="sm"
+                colorScheme="orange"
+                variant="outline"
+                value={u.id.toString()}
+              >
+                {u.name}
+              </Toggle>
+            ))}
+        </ToggleGroup>
+        {errors.players && (
+          <Text size="sm" color="red">
+            {errors.players.message}
+          </Text>
+        )}
+      </VStack>
+      <Fieldset
+        legend="開催日"
+        invalid={!!errors.date}
+        errorMessage={errors.date?.message}
+      >
+        <Controller
+          name="date"
+          control={control}
+          render={({ field }) => (
+            <Calendar
+              {...field}
+              w="full"
+              firstDayOfWeek="sunday"
+              locale="ja-JP"
+            />
+          )}
+        />
+      </Fieldset>
+      <Button type="submit" colorScheme="lime" loading={isSubmitting}>
+        追加
+      </Button>
+    </VStack>
   );
 };

@@ -8,7 +8,7 @@ type MadamisModalState = {
 type MadamisModalAction = {
   createOpen: () => void;
   editOpen: (id: number) => void;
-  close: () => void;
+  onClose: () => void;
 };
 
 export const useMadamisModalStore = create<
@@ -18,5 +18,5 @@ export const useMadamisModalStore = create<
   madamisId: undefined,
   createOpen: () => set(() => ({ open: true })),
   editOpen: (id) => set(() => ({ open: true, madamisId: id })),
-  close: () => set(() => ({ open: false, madamisId: undefined })),
+  onClose: () => set(() => ({ open: false, madamisId: undefined })),
 }));

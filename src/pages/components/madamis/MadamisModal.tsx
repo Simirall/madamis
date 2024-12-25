@@ -3,74 +3,76 @@ import {
   Button,
   Checkbox,
   Fieldset,
+  Input,
   Modal,
+  ModalBody,
+  ModalHeader,
   NativeSelect,
   SegmentedControl,
-  Stack,
-  TextInput,
-} from "@mantine/core";
-import { hc } from "hono/client";
-
+  VStack,
+} from "@yamada-ui/react";
+import { type InferResponseType, hc } from "hono/client";
 import type { FC } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { AppType } from "../../../api";
-import type { madamisPutSchema } from "../../../apis/madamis";
 import { gmRequired } from "../../../constants/gmRequired";
 import { useMadamisList } from "../../hooks/useMadamisList";
 import { useMadamisModalStore } from "../../stores/madamisModalStore";
+import { Loader } from "../Loader";
 import { DeleteMadamisButton } from "./DeleteMadamisModal";
 
 const client = hc<AppType>("/api");
 
-export const MadamisModal = () => {
-  const { data } = useMadamisList();
-  const { open, close, madamisId } = useMadamisModalStore();
-
-  const editData = madamisId
-    ? data?.find((d) => d.id === madamisId)
-    : undefined;
-
-  return (
-    <Modal
-      opened={open}
-      onClose={close}
-      title={`マダミスを${editData ? "編集" : "追加"}`}
-      centered
-      closeOnClickOutside={false}
-    >
-      <MadamisForm editData={editData} />
-    </Modal>
-  );
-};
-
-const MadamisForm: FC<{
-  editData?: z.infer<typeof madamisPutSchema>;
-}> = ({ editData }) => {
-  const { data, mutate } = useMadamisList();
-  const { close, madamisId } = useMadamisModalStore();
-
-  const formSchema = z.object({
+const formSchema = (urls: ReadonlyArray<string>) =>
+  z.object({
     title: z.string().min(1),
     link: z
       .string()
       .url()
-      .refine(
-        (v) =>
-          !data
-            ?.filter((d) => (madamisId ? d.id !== madamisId : true))
-            .map((d) => d.link)
-            .includes(v),
-        {
-          message: "Already exists",
-        },
-      ),
+      .refine((v) => !urls.includes(v), {
+        message: "Already exists",
+      }),
     player: z.coerce.number().int().min(1).max(6),
     gmRequired: z.number().nonnegative().max(2),
     bought: z.boolean(),
   });
 
-  type FormSchema = z.infer<typeof formSchema>;
+export const MadamisModal = () => {
+  const { data } = useMadamisList();
+  const { open, onClose, madamisId } = useMadamisModalStore();
+
+  const editData = madamisId
+    ? data?.find((d) => d.id === madamisId)
+    : undefined;
+
+  const madamisUrls = data
+    ?.filter((d) => (madamisId ? d.id !== madamisId : true))
+    .map((d) => d.link);
+
+  return (
+    <Modal open={open} onClose={onClose} closeOnOverlay={false}>
+      <ModalHeader>{`マダミスを${editData ? "編集" : "追加"}`}</ModalHeader>
+      <ModalBody>
+        {madamisUrls ? (
+          <MadamisForm madamisUrls={madamisUrls} editData={editData} />
+        ) : (
+          <Loader />
+        )}
+      </ModalBody>
+    </Modal>
+  );
+};
+
+const MadamisForm: FC<{
+  madamisUrls: ReadonlyArray<string>;
+  editData?: InferResponseType<typeof client.madamis.$get>[number];
+}> = ({ editData, madamisUrls }) => {
+  const { mutate } = useMadamisList();
+  const { onClose, madamisId } = useMadamisModalStore();
+
+  const madamisFormSchema = formSchema(madamisUrls);
+  type FormSchema = z.infer<typeof madamisFormSchema>;
 
   const {
     register,
@@ -79,7 +81,7 @@ const MadamisForm: FC<{
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(madamisFormSchema),
     defaultValues: {
       title: editData?.title,
       link: editData?.link,
@@ -100,52 +102,58 @@ const MadamisForm: FC<{
       });
     }
     await mutate();
-    close();
+    onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Fieldset legend="マダミス情報">
-        <Stack>
-          <TextInput
-            label="タイトル"
-            placeholder="🧊山脈 陰謀の分水嶺"
-            {...register("title")}
-            error={errors.title?.message}
-          />
-          <TextInput
-            label="リンク"
-            placeholder="https://example.booth.pm"
-            {...register("link")}
-            error={errors.link?.message}
-          />
-          <NativeSelect
-            label="PL人数"
-            data={["1", "2", "3", "4", "5", "6"]}
-            {...register("player")}
-            error={errors.player?.message}
-          />
-          <SegmentedControl
-            value={String(watch("gmRequired") ?? 0)}
-            onChange={(e) => {
-              setValue("gmRequired", Number(e));
-            }}
-            data={gmRequired.map((g, i) => ({
-              label: g,
-              value: i.toString(),
-            }))}
-          />
-          <Checkbox
-            label="購入済み"
-            {...register("bought")}
-            error={errors.bought?.message}
-          />
-          <Button type="submit" loading={isSubmitting}>
-            {editData ? "更新" : "追加"}
-          </Button>
-          {madamisId && <DeleteMadamisButton madamisId={madamisId} />}
-        </Stack>
+    <VStack as="form" onSubmit={handleSubmit(onSubmit)}>
+      <Fieldset
+        legend="タイトル"
+        invalid={!!errors.title}
+        errorMessage={errors.title?.message}
+      >
+        <Input placeholder="🧊山脈 陰謀の分水嶺" {...register("title")} />
       </Fieldset>
-    </form>
+      <Fieldset
+        legend="リンク"
+        invalid={!!errors.link}
+        errorMessage={errors.link?.message}
+      >
+        <Input placeholder="https://example.booth.pm" {...register("link")} />
+      </Fieldset>
+      <Fieldset
+        legend="PL人数"
+        invalid={!!errors.player}
+        errorMessage={errors.player?.message}
+      >
+        <NativeSelect
+          items={[
+            { label: "1", value: "1" },
+            { label: "2", value: "2" },
+            { label: "3", value: "3" },
+            { label: "4", value: "4" },
+            { label: "5", value: "5" },
+            { label: "6", value: "6" },
+          ]}
+          {...register("player")}
+        />
+      </Fieldset>
+      <SegmentedControl
+        colorScheme="yellow"
+        value={String(watch("gmRequired") ?? 0)}
+        onChange={(e) => {
+          setValue("gmRequired", Number(e));
+        }}
+        items={gmRequired.map((g, i) => ({
+          label: g,
+          value: i.toString(),
+        }))}
+      />
+      <Checkbox label="購入済み/無料" size="lg" {...register("bought")} />
+      <Button type="submit" colorScheme="lime" loading={isSubmitting}>
+        {editData ? "更新" : "追加"}
+      </Button>
+      {madamisId && <DeleteMadamisButton madamisId={madamisId} />}
+    </VStack>
   );
 };

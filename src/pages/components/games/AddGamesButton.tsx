@@ -1,7 +1,9 @@
-import { Button } from "@mantine/core";
+import { Button } from "@yamada-ui/react";
+import { gm } from "../../../constants/gmRequired";
 import { useMadamisList } from "../../hooks/useMadamisList";
 import { useUser } from "../../hooks/useUser";
 import { useGameModalStore } from "../../stores/gameModalStore";
+import { Loader } from "../Loader";
 
 export const AddGameButton = ({ madamisId }: { madamisId: number }) => {
   const { data: madamisList } = useMadamisList();
@@ -13,14 +15,18 @@ export const AddGameButton = ({ madamisId }: { madamisId: number }) => {
     new Set(madamis?.games.flatMap((g) => g.gameUsers.map((u) => u.user.id))),
   ).length;
 
+  if (!madamis || !users) {
+    return <Loader />;
+  }
+
   return (
     <>
-      {madamis &&
-      users &&
-      users.length - playedPlayers + (madamis.gmRequired === 1 ? 0 : 1) >
-        madamis.player ? (
+      {users.length -
+        (playedPlayers + (madamis.gmRequired === gm.required ? 0 : 1)) >
+      madamis.player ? (
         <Button
-          variant="light"
+          variant="surface"
+          colorScheme="lime"
           onClick={() => {
             createOpen(madamisId);
           }}

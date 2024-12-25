@@ -1,5 +1,11 @@
-import { Button, Group, Modal } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import {
+  Button,
+  HStack,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  useDisclosure,
+} from "@yamada-ui/react";
 import { hc } from "hono/client";
 import { type FC, useState } from "react";
 import type { AppType } from "../../../api";
@@ -11,9 +17,9 @@ const client = hc<AppType>("/api");
 const DeleteMadamisModal: FC<{
   madamisId: number;
   opened: boolean;
-  close: () => void;
-}> = ({ madamisId, opened, close }) => {
-  const { close: closeMadamisModal } = useMadamisModalStore();
+  onClose: () => void;
+}> = ({ madamisId, opened, onClose }) => {
+  const { onClose: closeMadamisModal } = useMadamisModalStore();
   const { mutate } = useMadamisList();
 
   const [loading, setLoading] = useState(false);
@@ -25,25 +31,27 @@ const DeleteMadamisModal: FC<{
     });
     await mutate();
     closeMadamisModal();
-    close();
+    onClose();
   };
 
   return (
-    <Modal
-      opened={opened}
-      onClose={close}
-      centered
-      size="sm"
-      title="削除しますか？"
-    >
-      <Group>
-        <Button color="red" onClick={onDelete} loading={loading}>
-          削除する
-        </Button>
-        <Button color="blue" variant="light" onClick={close} loading={loading}>
-          削除しない
-        </Button>
-      </Group>
+    <Modal open={opened} onClose={onClose} size="sm">
+      <ModalHeader>削除しますか？</ModalHeader>
+      <ModalBody>
+        <HStack>
+          <Button colorScheme="red" onClick={onDelete} loading={loading}>
+            削除する
+          </Button>
+          <Button
+            colorScheme="sky"
+            variant="subtle"
+            onClick={onClose}
+            loading={loading}
+          >
+            削除しない
+          </Button>
+        </HStack>
+      </ModalBody>
     </Modal>
   );
 };
@@ -51,14 +59,18 @@ const DeleteMadamisModal: FC<{
 export const DeleteMadamisButton: FC<{ madamisId: number }> = ({
   madamisId,
 }) => {
-  const [opened, { open, close }] = useDisclosure(false);
+  const { open, onOpen, onClose } = useDisclosure();
 
   return (
     <>
-      <Button color="red" variant="light" onClick={open}>
+      <Button colorScheme="red" variant="surface" onClick={onOpen}>
         削除
       </Button>
-      <DeleteMadamisModal madamisId={madamisId} opened={opened} close={close} />
+      <DeleteMadamisModal
+        madamisId={madamisId}
+        opened={open}
+        onClose={onClose}
+      />
     </>
   );
 };

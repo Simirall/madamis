@@ -1,9 +1,10 @@
-import { ActionIcon, Box } from "@mantine/core";
 import { Plus } from "@phosphor-icons/react";
+import { Box, IconButton } from "@yamada-ui/react";
 import { useMadamisModalStore } from "../../stores/madamisModalStore";
 
 export const AddMadamisButton = () => {
   const { createOpen } = useMadamisModalStore();
+
   return (
     <>
       <Box
@@ -15,16 +16,16 @@ export const AddMadamisButton = () => {
           zIndex: 1,
         }}
       >
-        <ActionIcon
-          variant="filled"
-          color="orange"
+        <IconButton
+          variant="solid"
+          colorScheme="orange"
           size="xl"
-          radius="xl"
+          fullRounded
           aria-label="Add Madamis"
           onClick={createOpen}
         >
           <Plus fontSize="1.6rem" />
-        </ActionIcon>
+        </IconButton>
       </Box>
     </>
   );

@@ -1,19 +1,15 @@
-import { drizzle } from "drizzle-orm/d1";
-import { Hono } from "hono";
-import { games, gameUsers } from "../../schema";
-import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
+import { Hono } from "hono";
+import { z } from "zod";
+import { gameUsers, games } from "../../schema";
 
 const gamesPostSchema = z.object({
   madamisId: z.number().int(),
   date: z.string(),
   gm: z.number().int(),
   players: z.array(z.number().int()),
-});
-
-const gamesPutSchema = gamesPostSchema.extend({
-  id: z.number().int(),
 });
 
 const gamesApi = new Hono<{ Bindings: Env }>();
@@ -45,31 +41,6 @@ export const gamesApp = gamesApi
           gm: 0,
         })),
     ]);
-
-    return new Response(null, { status: 204 });
-  })
-  .put("/", zValidator("json", gamesPutSchema), async (c) => {
-    const db = drizzle(c.env.DB);
-    const body = c.req.valid("json");
-
-    // TODO: ちゃんとしたいところだが..
-    await db.delete(gameUsers).where(eq(gameUsers.gameId, body.id));
-    await db.insert(gameUsers).values([
-      {
-        userId: body.gm,
-        gameId: body.id,
-        gm: 1,
-      },
-      ...body.players
-        .filter((u) => u !== body.gm)
-        .map((p) => ({
-          userId: p,
-          gameId: body.id,
-          gm: 0,
-        })),
-    ]);
-
-    await db.update(games).set(body).where(eq(games.id, body.id));
 
     return new Response(null, { status: 204 });
   })

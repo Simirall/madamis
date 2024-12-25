@@ -1,8 +1,8 @@
-import { Container } from "@mantine/core";
+import { Container } from "@yamada-ui/react";
 import { Header } from "./components/Header";
 import { GameModal } from "./components/games/GameModal";
 import { AddMadamisButton } from "./components/madamis/AddMadamisButton";
-import { MadamisList } from "./components/madamis/MadamisList";
+import { MadamisContainer } from "./components/madamis/MadamisList";
 import { MadamisModal } from "./components/madamis/MadamisModal";
 
 export const App = () => {
@@ -11,7 +11,7 @@ export const App = () => {
       <Header />
       <AddMadamisButton />
       <Container size="100%">
-        <MadamisList />
+        <MadamisContainer />
       </Container>
       <MadamisModal />
       <GameModal />

@@ -1,75 +1,51 @@
-import {
-  ActionIcon,
-  Badge,
-  Group,
-  Paper,
-  Stack,
-  useMantineColorScheme,
-} from "@mantine/core";
-import { PencilSimple } from "@phosphor-icons/react";
-import { useGameModalStore } from "../../stores/gameModalStore";
+import { Card, HStack, Tag, VStack, Wrap } from "@yamada-ui/react";
+import type { InferResponseType } from "hono";
+import { hc } from "hono/client";
+import type { FC } from "react";
+import type { AppType } from "../../../api";
+import { gm } from "../../../constants/gmRequired";
+import { DeleteGameButton } from "./DeleteGameModal";
 
-// 型を定義から取りたいが.. https://github.com/drizzle-team/drizzle-orm/discussions/1483
-export const GameState = ({
-  game,
-}: {
-  game: {
-    id: number;
-    madamisId: number;
-    date: string;
-    gameUsers: ReadonlyArray<{
-      gm: number;
-      gameId: number;
-      userId: number;
-      user: {
-        id: number;
-        name: string;
-        color: string;
-      };
-    }>;
-  };
-}) => {
-  const { colorScheme } = useMantineColorScheme();
-  const { editOpen } = useGameModalStore();
+const client = hc<AppType>("/api");
 
+export const GameState: FC<{
+  game: InferResponseType<typeof client.madamis.$get>[number]["games"][number];
+  gmRequired: (typeof gm)[keyof typeof gm];
+  player: number;
+}> = ({ game, gmRequired, player }) => {
   const date = new Date(game.date).toLocaleDateString("ja-JP");
 
   return (
-    <Paper p="xs" withBorder>
-      <Stack gap="xs">
-        <Group gap="xs">
-          <Badge
-            color={colorScheme === "dark" ? "gray" : "gray.1"}
-            c={colorScheme === "dark" ? "white" : "dark"}
-          >
+    <Card p="sm" shadow="md">
+      <VStack gap="sm">
+        <HStack gap="sm">
+          <Tag colorScheme="blue" size="sm">
             プレイ日時: {date}
-          </Badge>
-          <ActionIcon
-            size="sm"
-            variant="light"
-            radius="xl"
-            onClick={() => {
-              editOpen(game.madamisId, game.id);
-            }}
-          >
-            <PencilSimple />
-          </ActionIcon>
-        </Group>
-        <Group gap="xs" justify="center">
-          {game.gameUsers.map((u) => (
-            <Badge
-              key={u.user.id}
-              color={
-                u.gm ? "orange" : colorScheme === "dark" ? "gray" : "gray.1"
-              }
-              size="sm"
-              c={u.gm ? "white" : u.user.color}
-            >
-              {u.user.name}
-            </Badge>
-          ))}
-        </Group>
-      </Stack>
-    </Paper>
+          </Tag>
+          <DeleteGameButton gameId={game.id} />
+        </HStack>
+        <Wrap gap="sm" justify="center">
+          {game.gameUsers.map((u) => {
+            const isGm =
+              gmRequired === gm.required
+                ? true
+                : gmRequired === gm.any
+                  ? game.gameUsers.length === player + 1
+                  : false;
+
+            return (
+              <Tag
+                key={u.user.id}
+                size="sm"
+                colorScheme={u.gm ? "orange" : "purple"}
+                variant={u.gm && isGm ? "solid" : "subtle"}
+              >
+                {u.user.name}
+              </Tag>
+            );
+          })}
+        </Wrap>
+      </VStack>
+    </Card>
   );
 };
