@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@hono/zod-validator": "^0.2.2",
-    "@hookform/resolvers": "^3.9.0",
+    "@hookform/resolvers": "^3.9.1",
     "@phosphor-icons/react": "^2.1.7",
     "@yamada-ui/calendar": "^1.8.12",
     "@yamada-ui/react": "^1.7.2",
@@ -22,24 +22,28 @@
     "drizzle-orm": "^0.33.0",
     "hono": "^4.6.14",
     "react": "^18.3.1",
+    "react-compiler-runtime": "19.0.0-beta-b2e8e9c-20241220",
     "react-dom": "^18.3.1",
-    "react-hook-form": "^7.53.0",
-    "swr": "^2.2.5",
-    "zod": "^3.23.8",
+    "react-hook-form": "^7.54.2",
+    "swr": "^2.3.0",
+    "zod": "^3.24.1",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@cloudflare/workers-types": "^4.20241004.0",
+    "@cloudflare/workers-types": "^4.20241224.0",
     "@hono/vite-cloudflare-pages": "^0.4.2",
     "@hono/vite-dev-server": "^0.16.0",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^16.0.0",
     "@total-typescript/ts-reset": "^0.6.1",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "babel-plugin-react-compiler": "19.0.0-beta-b2e8e9c-20241220",
     "drizzle-kit": "^0.24.2",
-    "prettier": "^3.3.3",
-    "vite": "^5.4.8",
-    "wrangler": "^3.80.0"
+    "prettier": "^3.4.2",
+    "vite": "^5.4.11",
+    "wrangler": "^3.99.0"
   },
-  "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
+  "packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf"
 }
