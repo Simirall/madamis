@@ -19,8 +19,8 @@
     "@yamada-ui/calendar": "^1.8.13",
     "@yamada-ui/react": "^1.7.3",
     "dayjs": "^1.11.13",
-    "drizzle-orm": "^0.33.0",
-    "hono": "^4.12.7",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.14",
     "react": "^18.3.1",
     "react-compiler-runtime": "19.0.0-beta-b2e8e9c-20241220",
     "react-dom": "^18.3.1",
@@ -42,7 +42,7 @@
     "babel-plugin-react-compiler": "19.0.0-beta-b2e8e9c-20241220",
     "drizzle-kit": "^0.24.2",
     "prettier": "^3.4.2",
-    "vite": "^5.4.21",
+    "vite": "^6.4.2",
     "wrangler": "^3.114.17"
   },
   "packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf"
