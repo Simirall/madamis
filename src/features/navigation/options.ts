@@ -74,7 +74,7 @@ export const getMadamisNavigationActiveItems = (
     items.push({
       colorScheme: "violet",
       key: "players",
-      label: `PL: ${playerLabel}`,
+      label: `人数: ${playerLabel}`,
     });
   }
 
