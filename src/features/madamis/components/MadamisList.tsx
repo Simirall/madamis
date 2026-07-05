@@ -77,7 +77,7 @@ export const MadamisContainer = () => {
   const end = madamis.total === 0 ? 0 : start + madamis.items.length - 1;
 
   return (
-    <VStack align="center" gap="sm">
+    <VStack align="center" gap="md">
       <MadamisListToolbar end={end} start={start} total={madamis.total} />
       <Grid
         gap="sm"
