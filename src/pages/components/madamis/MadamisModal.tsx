@@ -1,12 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
-  Checkbox,
   Field,
   Input,
   Modal,
+  NumberInput,
   SegmentedControl,
-  Select,
   VStack,
 } from "@yamada-ui/react";
 import { hc, type InferResponseType } from "hono/client";
@@ -21,15 +20,6 @@ import { Loader } from "../Loader";
 import { DeleteMadamisButton } from "./DeleteMadamisModal";
 
 const client = hc<AppType>("/api");
-
-const playerItems: Select.Item[] = [
-  { label: "1", value: "1" },
-  { label: "2", value: "2" },
-  { label: "3", value: "3" },
-  { label: "4", value: "4" },
-  { label: "5", value: "5" },
-  { label: "6", value: "6" },
-];
 
 const formSchema = (urls: ReadonlyArray<string>) =>
   z.object({
@@ -116,6 +106,25 @@ const MadamisForm: FC<{
     onClose(); // FIXME: 閉じたときにスクロールが戻らない
   };
 
+  const handleMarkAsNotBought = async () => {
+    if (!madamisId || !editData) {
+      return;
+    }
+
+    await client.madamis.$put({
+      json: {
+        bought: false,
+        gmRequired: editData.gmRequired,
+        id: madamisId,
+        link: editData.link,
+        player: editData.player,
+        title: editData.title,
+      },
+    });
+    await mutate();
+    onClose();
+  };
+
   return (
     <VStack as="form" gap="md" onSubmit={handleSubmit(onSubmit)}>
       <Field.Root
@@ -144,10 +153,12 @@ const MadamisForm: FC<{
           control={control}
           name="player"
           render={({ field }) => (
-            <Select.Root
-              items={playerItems}
+            <NumberInput
+              max={6}
+              min={1}
               onChange={(value) => field.onChange(Number(value))}
-              value={String(field.value)}
+              step={1}
+              value={Number(field.value ?? 4)}
             />
           )}
         />
@@ -169,12 +180,14 @@ const MadamisForm: FC<{
           />
         )}
       />
-      <Checkbox size="lg" {...register("bought")}>
-        購入済み/無料
-      </Checkbox>
       <Button colorScheme="lime" loading={isSubmitting} type="submit">
         {editData ? "更新" : "追加"}
       </Button>
+      {editData?.bought ? (
+        <Button colorScheme="gray" onClick={handleMarkAsNotBought}>
+          未購入に戻す
+        </Button>
+      ) : null}
       {madamisId && <DeleteMadamisButton madamisId={madamisId} />}
     </VStack>
   );

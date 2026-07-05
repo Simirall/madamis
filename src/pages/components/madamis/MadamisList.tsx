@@ -157,11 +157,7 @@ const MadamisCard: FC<{
           <EmptyState.Title>No Game</EmptyState.Title>
         </EmptyState.Root>
       )}
-      {madamis.bought ? (
-        <AddGameButton madamisId={madamis.id} />
-      ) : (
-        <Button disabled>未購入</Button>
-      )}
+      <AddGameButton madamisId={madamis.id} />
     </Card.Root>
   );
 };
