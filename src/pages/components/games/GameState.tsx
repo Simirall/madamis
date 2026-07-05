@@ -1,4 +1,4 @@
-import { Card, HStack, Tag, VStack, Wrap } from "@yamada-ui/react";
+import { CardRoot as Card, HStack, Tag, VStack, Wrap } from "@yamada-ui/react";
 import type { InferResponseType } from "hono";
 import { hc } from "hono/client";
 import type { FC } from "react";

@@ -2,13 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Checkbox,
-  Fieldset,
+  FieldsetRoot as Fieldset,
   Input,
-  Modal,
+  ModalRoot as Modal,
   ModalBody,
   ModalHeader,
-  NativeSelect,
-  SegmentedControl,
+  NativeSelectRoot as NativeSelect,
+  SegmentedControlRoot as SegmentedControl,
   VStack,
 } from "@yamada-ui/react";
 import { hc, type InferResponseType } from "hono/client";
@@ -72,14 +72,15 @@ const MadamisForm: FC<{
   const { onClose, madamisId } = useMadamisModalStore();
 
   const madamisFormSchema = formSchema(madamisUrls);
-  type FormSchema = z.infer<typeof madamisFormSchema>;
+  type FormInput = z.input<typeof madamisFormSchema>;
+  type FormSchema = z.output<typeof madamisFormSchema>;
 
   const {
     register,
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormSchema>({
+  } = useForm<FormInput, unknown, FormSchema>({
     defaultValues: {
       bought: Boolean(editData?.bought),
       gmRequired: editData?.gmRequired ?? 0,
@@ -154,7 +155,9 @@ const MadamisForm: FC<{
           />
         )}
       />
-      <Checkbox label="購入済み/無料" size="lg" {...register("bought")} />
+      <Checkbox size="lg" {...register("bought")}>
+        購入済み/無料
+      </Checkbox>
       <Button colorScheme="lime" loading={isSubmitting} type="submit">
         {editData ? "更新" : "追加"}
       </Button>

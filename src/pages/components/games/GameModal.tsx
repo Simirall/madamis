@@ -1,18 +1,18 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar } from "@yamada-ui/calendar";
 import {
   Button,
-  Fieldset,
+  CalendarRoot as Calendar,
+  FieldsetRoot as Fieldset,
   Heading,
   HStack,
-  Modal,
+  ModalRoot as Modal,
   ModalBody,
   ModalHeader,
-  NativeSelect,
+  NativeSelectRoot as NativeSelect,
   Tag,
   Text,
   Toggle,
-  ToggleGroup,
+  ToggleGroupRoot as ToggleGroup,
   VStack,
   Wrap,
 } from "@yamada-ui/react";
@@ -177,7 +177,7 @@ const GameForm: FC<{
             ))}
         </ToggleGroup>
         {errors.players && (
-          <Text color="red" size="sm">
+          <Text color="red" fontSize="sm">
             {errors.players.message}
           </Text>
         )}
@@ -193,8 +193,8 @@ const GameForm: FC<{
           render={({ field }) => (
             <Calendar
               {...field}
-              firstDayOfWeek="sunday"
               locale="ja-JP"
+              startDayOfWeek="sunday"
               w="full"
             />
           )}

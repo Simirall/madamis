@@ -1,7 +1,7 @@
 import {
   Button,
   HStack,
-  Modal,
+  ModalRoot as Modal,
   ModalBody,
   ModalHeader,
   useDisclosure,

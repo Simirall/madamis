@@ -1,7 +1,7 @@
 import { Link, NuclearPlant, PencilSimple } from "@phosphor-icons/react";
 import {
   Button,
-  Card,
+  CardRoot as Card,
   EmptyState,
   Grid,
   HStack,
@@ -150,10 +150,12 @@ const MadamisCard: FC<{
           ))}
         </VStack>
       ) : (
-        <EmptyState
-          indicator={<NuclearPlant weight="duotone" />}
-          title="No Game"
-        />
+        <EmptyState.Root>
+          <EmptyState.Indicator>
+            <NuclearPlant weight="duotone" />
+          </EmptyState.Indicator>
+          <EmptyState.Title>No Game</EmptyState.Title>
+        </EmptyState.Root>
       )}
       {madamis.bought ? (
         <AddGameButton madamisId={madamis.id} />

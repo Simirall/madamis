@@ -1,4 +1,8 @@
-import { CheckboxCard, Select, Wrap } from "@yamada-ui/react";
+import {
+  CheckboxCardRoot as CheckboxCard,
+  SelectRoot as Select,
+  Wrap,
+} from "@yamada-ui/react";
 import { useMadamisNavigationStore } from "../../stores/madamisNavigationStore";
 
 export const MadamisNavigation = () => {

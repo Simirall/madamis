@@ -1,4 +1,4 @@
-import type { ThemeColorScheme } from "@yamada-ui/react";
+import type { ColorScheme } from "@yamada-ui/react";
 
 export const gm = {
   any: 0,
@@ -11,4 +11,4 @@ export const gmRequiredBadgeColor = [
   "cyan",
   "orange",
   "green",
-] as const satisfies ReadonlyArray<ThemeColorScheme>;
+] as const satisfies ReadonlyArray<ColorScheme>;

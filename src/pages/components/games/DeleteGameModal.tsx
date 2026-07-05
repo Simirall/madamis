@@ -3,7 +3,7 @@ import {
   Button,
   HStack,
   IconButton,
-  Modal,
+  ModalRoot as Modal,
   ModalBody,
   ModalHeader,
   useDisclosure,

@@ -5,7 +5,7 @@ import type { AppType } from "../../api";
 const client = hc<AppType>;
 
 export const useUser = () => {
-  const { data, mutate } = useSWR("/api/user", (path) =>
+  const { data, mutate } = useSWR("/api/user", () =>
     client("/api")
       .user.$get()
       .then((res) => res.json()),
