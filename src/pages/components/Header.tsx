@@ -8,9 +8,11 @@ import {
   useColorMode,
   useColorModeValue,
 } from "@yamada-ui/react";
+import { useMadamisPageParam } from "../../features/madamis/hooks/useMadamisPageParam";
 import { MadamisNavigation } from "../../features/navigation/components/MadamisNavigation";
 
 export const Header = () => {
+  const { resetPage } = useMadamisPageParam();
   const bg = useColorModeValue<
     Token<CSS.Property.Background, "colors">,
     Token<CSS.Property.Background, "colors">
@@ -31,6 +33,7 @@ export const Header = () => {
         colorScheme="emerald"
         fontSize="3xl"
         onClick={() => {
+          resetPage();
           window.scrollTo({ behavior: "smooth", top: 0 });
         }}
         size="xl"

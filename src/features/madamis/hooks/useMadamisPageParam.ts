@@ -1,4 +1,6 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+const madamisPageChangeEvent = "madamis-page-change";
 
 const readPageParam = () => {
   if (typeof window === "undefined") {
@@ -17,12 +19,25 @@ const replacePageParam = (nextPage: number) => {
   const params = new URLSearchParams(window.location.search);
   params.set("page", String(nextPage));
   window.history.replaceState(null, "", `?${params.toString()}`);
+  window.dispatchEvent(new CustomEvent(madamisPageChangeEvent));
 };
 
 export const getCurrentMadamisPage = readPageParam;
 
 export const useMadamisPageParam = () => {
   const [page, setPageState] = useState(readPageParam);
+
+  useEffect(() => {
+    const syncPage = () => {
+      setPageState(readPageParam());
+    };
+
+    window.addEventListener(madamisPageChangeEvent, syncPage);
+
+    return () => {
+      window.removeEventListener(madamisPageChangeEvent, syncPage);
+    };
+  }, []);
 
   const setPage = useCallback((nextPage: number) => {
     replacePageParam(nextPage);
