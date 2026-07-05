@@ -1,4 +1,4 @@
-import { FunnelSimple } from "@phosphor-icons/react";
+import { FunnelSimpleIcon } from "@phosphor-icons/react";
 import {
   Button,
   CheckboxCard,
@@ -10,111 +10,30 @@ import {
   VStack,
 } from "@yamada-ui/react";
 import { useState } from "react";
-import type {
-  MadamisSortKey,
-  MadamisSortOrder,
-} from "../../stores/madamisNavigationStore";
 import {
-  madamisNavigationChangedEvent,
+  gmRequiredItems,
+  playerItems,
+  sortKeyItems,
+  sortOrderItems,
+} from "../options";
+import {
+  defaultMadamisNavigationDraft,
+  type MadamisNavigationDraft,
+  type MadamisSortKey,
+  type MadamisSortOrder,
   useMadamisNavigationStore,
-} from "../../stores/madamisNavigationStore";
-
-const playerItems: Select.Item[] = [
-  {
-    label: "2人",
-    value: "2",
-  },
-  {
-    label: "3人",
-    value: "3",
-  },
-  {
-    label: "4人",
-    value: "4",
-  },
-  {
-    label: "5人",
-    value: "5",
-  },
-  {
-    label: "6人",
-    value: "6",
-  },
-  {
-    label: "7人",
-    value: "7",
-  },
-];
-
-const gmRequiredItems: Select.Item[] = [
-  {
-    label: "GM任意",
-    value: "0",
-  },
-  {
-    label: "GM必須",
-    value: "1",
-  },
-  {
-    label: "GMなし",
-    value: "2",
-  },
-];
-
-const sortKeyItems: Select.Item[] = [
-  {
-    label: "追加順",
-    value: "added",
-  },
-  {
-    label: "名前順",
-    value: "title",
-  },
-];
-
-const sortOrderItems: Select.Item[] = [
-  {
-    label: "昇順",
-    value: "asc",
-  },
-  {
-    label: "降順",
-    value: "desc",
-  },
-];
-
-type MadamisNavigationDraft = {
-  gmRequired: string | undefined;
-  onlyBought: boolean;
-  onlyNotPlayed: boolean;
-  players: string | undefined;
-  sortKey: MadamisSortKey;
-  sortOrder: MadamisSortOrder;
-};
-
-const defaultDraft: MadamisNavigationDraft = {
-  gmRequired: undefined,
-  onlyBought: false,
-  onlyNotPlayed: false,
-  players: undefined,
-  sortKey: "added",
-  sortOrder: "asc",
-};
+} from "../store";
 
 export const MadamisNavigation = () => {
   const {
+    applyDraft,
+    getDraft,
     gmRequired,
-    setGmRequired,
     onlyBought,
-    setOnlyBought,
     onlyNotPlayed,
-    setPlayed,
     players,
-    setPlayers,
     sortKey,
-    setSortKey,
     sortOrder,
-    setSortOrder,
   } = useMadamisNavigationStore();
   const currentDraft = {
     gmRequired,
@@ -127,51 +46,20 @@ export const MadamisNavigation = () => {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<MadamisNavigationDraft>(currentDraft);
 
-  const resetPage = () => {
-    const params = new URLSearchParams(window.location.search);
-    params.set("page", "1");
-    window.history.replaceState(null, "", `?${params.toString()}`);
-    window.dispatchEvent(new CustomEvent(madamisNavigationChangedEvent));
-  };
-
   const onOpen = () => {
-    setDraft(currentDraft);
+    setDraft(getDraft());
     setOpen(true);
   };
 
   const onClose = () => {
-    const changed =
-      draft.gmRequired !== gmRequired ||
-      draft.onlyBought !== onlyBought ||
-      draft.onlyNotPlayed !== onlyNotPlayed ||
-      draft.players !== players ||
-      draft.sortKey !== sortKey ||
-      draft.sortOrder !== sortOrder;
-
-    setGmRequired(draft.gmRequired);
-    setOnlyBought(draft.onlyBought);
-    setPlayed(draft.onlyNotPlayed);
-    setPlayers(draft.players);
-    setSortKey(draft.sortKey);
-    setSortOrder(draft.sortOrder);
-
-    if (changed) {
-      resetPage();
-    }
-
+    applyDraft(draft);
     setOpen(false);
   };
 
   return (
     <>
-      <IconButton
-        colorScheme="teal"
-        fullRounded
-        onClick={onOpen}
-        size="lg"
-        variant="subtle"
-      >
-        <FunnelSimple size="1.6rem" weight="bold" />
+      <IconButton colorScheme="sky" fullRounded onClick={onOpen} size="lg">
+        <FunnelSimpleIcon size="1.6rem" weight="bold" />
       </IconButton>
       <Modal.Root onClose={onClose} open={open} size="lg">
         <Modal.Content>
@@ -181,7 +69,7 @@ export const MadamisNavigation = () => {
               <Button
                 colorScheme="warning"
                 onClick={() => {
-                  setDraft(defaultDraft);
+                  setDraft(defaultMadamisNavigationDraft);
                 }}
                 size="sm"
                 variant="subtle"
@@ -202,10 +90,10 @@ export const MadamisNavigation = () => {
                     colorScheme="teal"
                     flexShrink={0}
                     label="未プレイのみ"
-                    onChange={(e) => {
+                    onChange={(event) => {
                       setDraft((value) => ({
                         ...value,
-                        onlyNotPlayed: e.target.checked,
+                        onlyNotPlayed: event.target.checked,
                       }));
                     }}
                     variant="surface"
@@ -217,10 +105,10 @@ export const MadamisNavigation = () => {
                     colorScheme="cyan"
                     flexShrink={0}
                     label="購入済みのみ"
-                    onChange={(e) => {
+                    onChange={(event) => {
                       setDraft((value) => ({
                         ...value,
-                        onlyBought: e.target.checked,
+                        onlyBought: event.target.checked,
                       }));
                     }}
                     variant="surface"

@@ -1,39 +1,34 @@
 import type { InferResponseType } from "hono";
-import { hc } from "hono/client";
-import useSWR from "swr";
-import type { AppType } from "../../api";
+import useSWR, { useSWRConfig } from "swr";
+import { apiClient } from "../../../shared/apiClient";
 import {
   madamisPageSize,
   useMadamisNavigationStore,
-} from "../stores/madamisNavigationStore";
-
-const client = hc<AppType>("/api");
+} from "../../navigation/store";
+import { getCurrentMadamisPage } from "./useMadamisPageParam";
 
 export type MadamisListResponse = InferResponseType<
-  typeof client.madamis.$get,
+  typeof apiClient.madamis.$get,
   200
 >;
 export type MadamisListItem = MadamisListResponse["items"][number];
 export type MadamisGame = MadamisListItem["games"][number];
 
 type MadamisListQuery = NonNullable<
-  Parameters<typeof client.madamis.$get>[0]
+  Parameters<typeof apiClient.madamis.$get>[0]
 >["query"];
 
 const booleanQuery = (value: boolean): "true" | "false" =>
   value ? "true" : "false";
 
-const getCurrentMadamisPage = () => {
-  if (typeof window === "undefined") {
-    return 1;
-  }
+const isMadamisCacheKey = (key: unknown) =>
+  key === "/api/madamis/unfiltered" ||
+  (Array.isArray(key) && key[0] === "/api/madamis");
 
-  const page = Number.parseInt(
-    new URLSearchParams(window.location.search).get("page") ?? "1",
-    10,
-  );
+export const useRefreshMadamis = () => {
+  const { mutate } = useSWRConfig();
 
-  return Number.isNaN(page) || page < 1 ? 1 : page;
+  return () => mutate(isMadamisCacheKey);
 };
 
 export const useMadamisList = (page = getCurrentMadamisPage()) => {
@@ -51,10 +46,10 @@ export const useMadamisList = (page = getCurrentMadamisPage()) => {
     sortOrder,
   };
 
-  const { data, mutate, isLoading } = useSWR<MadamisListResponse>(
+  const { data, error, isLoading, mutate } = useSWR<MadamisListResponse>(
     ["/api/madamis", query],
     async ([, currentQuery]) => {
-      const res = await client.madamis.$get({
+      const res = await apiClient.madamis.$get({
         query: currentQuery as MadamisListQuery,
       });
 
@@ -66,30 +61,25 @@ export const useMadamisList = (page = getCurrentMadamisPage()) => {
     },
   );
 
-  return { data, isLoading, mutate };
-};
-
-export const useCurrentMadamisItems = () => {
-  const { data, isLoading, mutate } = useMadamisList();
-
-  return { data: data?.items, isLoading, mutate };
+  return { data, error, isLoading, mutate };
 };
 
 export const useMadamisListItem = (madamisId: number | undefined) => {
-  const { data, isLoading, mutate } = useMadamisList();
+  const { data, error, isLoading, mutate } = useMadamisList();
 
   return {
     data: madamisId ? data?.items.find((m) => m.id === madamisId) : undefined,
+    error,
     isLoading,
     mutate,
   };
 };
 
 export const useUnfilteredMadamisList = () => {
-  const { data, mutate, isLoading } = useSWR<MadamisListResponse>(
+  const { data, error, isLoading, mutate } = useSWR<MadamisListResponse>(
     "/api/madamis/unfiltered",
     async () => {
-      const res = await client.madamis.$get({
+      const res = await apiClient.madamis.$get({
         query: {
           page: "1",
           pageSize: "100",
@@ -106,5 +96,5 @@ export const useUnfilteredMadamisList = () => {
     },
   );
 
-  return { data: data?.items, isLoading, mutate };
+  return { data: data?.items, error, isLoading, mutate };
 };

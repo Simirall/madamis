@@ -1,9 +1,9 @@
 import { Container } from "@yamada-ui/react";
-import { GameModal } from "./components/games/GameModal";
+import { GameModal } from "../features/games/components/GameModal";
+import { AddMadamisButton } from "../features/madamis/components/AddMadamisButton";
+import { MadamisContainer } from "../features/madamis/components/MadamisList";
+import { MadamisModal } from "../features/madamis/components/MadamisModal";
 import { Header } from "./components/Header";
-import { AddMadamisButton } from "./components/madamis/AddMadamisButton";
-import { MadamisContainer } from "./components/madamis/MadamisList";
-import { MadamisModal } from "./components/madamis/MadamisModal";
 
 export const App = () => {
   return (

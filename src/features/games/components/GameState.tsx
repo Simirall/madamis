@@ -1,8 +1,8 @@
 import { Card, HStack, Tag, VStack, Wrap } from "@yamada-ui/react";
 import type { FC } from "react";
 import { gm } from "../../../constants/gmRequired";
-import type { MadamisGame } from "../../hooks/useMadamisList";
-import { DeleteGameButton } from "./DeleteGameModal";
+import type { MadamisGame } from "../../madamis/hooks/useMadamisList";
+import { DeleteGameButton } from "./DeleteGameButton";
 
 export const GameState: FC<{
   game: MadamisGame;
@@ -21,7 +21,7 @@ export const GameState: FC<{
           <DeleteGameButton gameId={game.id} />
         </HStack>
         <Wrap gap="sm" justify="center">
-          {game.gameUsers.map((u) => {
+          {game.gameUsers.map((gameUser) => {
             const isGm =
               gmRequired === gm.required
                 ? true
@@ -31,12 +31,12 @@ export const GameState: FC<{
 
             return (
               <Tag
-                colorScheme={u.gm ? "orange" : "purple"}
-                key={u.user.id}
+                colorScheme={gameUser.gm ? "orange" : "purple"}
+                key={gameUser.user.id}
                 size="sm"
-                variant={u.gm && isGm ? "solid" : "subtle"}
+                variant={gameUser.gm && isGm ? "solid" : "subtle"}
               >
-                {u.user.name}
+                {gameUser.user.name}
               </Tag>
             );
           })}

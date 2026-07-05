@@ -1,4 +1,8 @@
-import { Link, NuclearPlant, PencilSimple } from "@phosphor-icons/react";
+import {
+  LinkIcon,
+  NuclearPlantIcon,
+  PencilSimpleIcon,
+} from "@phosphor-icons/react";
 import {
   Button,
   Card,
@@ -10,58 +14,50 @@ import {
   Text,
   VStack,
 } from "@yamada-ui/react";
-import { type FC, useEffect, useState } from "react";
+import { type FC, useEffect, useRef } from "react";
 import {
   gmRequired,
   gmRequiredBadgeColor,
 } from "../../../constants/gmRequired";
-import type { MadamisListItem } from "../../hooks/useMadamisList";
-import { useMadamisList } from "../../hooks/useMadamisList";
-import { useMadamisModalStore } from "../../stores/madamisModalStore";
+import { Loader } from "../../../shared/components/Loader";
+import { AddGameButton } from "../../games/components/AddGameButton";
+import { GameState } from "../../games/components/GameState";
 import {
-  madamisNavigationChangedEvent,
   madamisPageSize,
-} from "../../stores/madamisNavigationStore";
-import { AddGameButton } from "./../games/AddGamesButton";
-import { GameState } from "./../games/GameState";
-import { Loader } from "../Loader";
-
-const getInitialPage = () => {
-  const page = Number.parseInt(
-    new URLSearchParams(window.location.search).get("page") ?? "1",
-    10,
-  );
-
-  return Number.isNaN(page) || page < 1 ? 1 : page;
-};
+  useMadamisNavigationRevision,
+} from "../../navigation/store";
+import { type MadamisListItem, useMadamisList } from "../hooks/useMadamisList";
+import { useMadamisPageParam } from "../hooks/useMadamisPageParam";
+import { useMadamisModalStore } from "../stores/madamisModalStore";
 
 export const MadamisContainer = () => {
-  const [page, setPage] = useState(getInitialPage);
-  const { data: madamis } = useMadamisList(page);
+  const { page, resetPage, setPage } = useMadamisPageParam();
+  const navigationRevision = useMadamisNavigationRevision();
+  const { data: madamis, error } = useMadamisList(page);
+  const didMount = useRef(false);
 
   useEffect(() => {
-    const onNavigationChanged = () => {
-      setPage(getInitialPage());
-      window.scrollTo({ behavior: "smooth", top: 0 });
-    };
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
 
-    window.addEventListener(madamisNavigationChangedEvent, onNavigationChanged);
+    if (navigationRevision < 1) {
+      return;
+    }
 
-    return () => {
-      window.removeEventListener(
-        madamisNavigationChangedEvent,
-        onNavigationChanged,
-      );
-    };
-  }, []);
+    resetPage();
+    window.scrollTo({ behavior: "smooth", top: 0 });
+  }, [navigationRevision, resetPage]);
 
   const updatePage = (nextPage: number) => {
-    const params = new URLSearchParams(window.location.search);
-    params.set("page", String(nextPage));
-    window.history.replaceState(null, "", `?${params.toString()}`);
     setPage(nextPage);
     window.scrollTo({ behavior: "smooth", top: 0 });
   };
+
+  if (error) {
+    return <Text color="red">マダミス一覧の取得に失敗しました</Text>;
+  }
 
   if (!madamis) {
     return <Loader />;
@@ -72,8 +68,8 @@ export const MadamisContainer = () => {
   const end = madamis.total === 0 ? 0 : start + madamis.items.length - 1;
 
   return (
-    <VStack align="center" p="sm">
-      <Text color="gray" fontSize="sm" w="full">
+    <VStack align="center" gap="sm">
+      <Text color="gray" fontSize="sm" textAlign="end" w="full">
         {start} - {end} / {madamis.total} 件
       </Text>
       <Grid
@@ -105,7 +101,9 @@ const MadamisList: FC<{
     );
   }
 
-  return madamis.map((d) => <MadamisCard key={d.id} madamis={d} />);
+  return madamis.map((madamisItem) => (
+    <MadamisCard key={madamisItem.id} madamis={madamisItem} />
+  ));
 };
 
 const MadamisCard: FC<{
@@ -129,7 +127,7 @@ const MadamisCard: FC<{
         href={madamis.link}
         lineHeight="2"
         minH="3rem"
-        startIcon={<Link fontSize="1.2rem" weight="bold" />}
+        startIcon={<LinkIcon fontSize="1.2rem" weight="bold" />}
         target="_blank"
         textWrap="wrap"
         variant="surface"
@@ -147,23 +145,21 @@ const MadamisCard: FC<{
           colorScheme="lime"
           disabled={madamis.games.length > 0}
           fullRounded
+          onClick={() => {
+            editOpen(madamis.id);
+          }}
           variant="subtle"
         >
-          <PencilSimple
-            fontSize="1.4rem"
-            onClick={() => {
-              editOpen(madamis.id);
-            }}
-          />
+          <PencilSimpleIcon fontSize="1.4rem" />
         </IconButton>
       </HStack>
       {madamis.games.length > 0 ? (
         <VStack alignSelf="center" gap="sm">
-          {madamis.games.map((g) => (
+          {madamis.games.map((game) => (
             <GameState
-              game={g}
+              game={game}
               gmRequired={madamis.gmRequired as 0 | 1 | 2}
-              key={g.id}
+              key={game.id}
               player={madamis.player}
             />
           ))}
@@ -171,12 +167,12 @@ const MadamisCard: FC<{
       ) : (
         <EmptyState.Root>
           <EmptyState.Indicator>
-            <NuclearPlant weight="duotone" />
+            <NuclearPlantIcon weight="duotone" />
           </EmptyState.Indicator>
           <EmptyState.Title>No Game</EmptyState.Title>
         </EmptyState.Root>
       )}
-      <AddGameButton madamisId={madamis.id} />
+      <AddGameButton madamis={madamis} />
     </Card.Root>
   );
 };

@@ -1,4 +1,4 @@
-import { MoonStars, Sun } from "@phosphor-icons/react";
+import { MoonStarsIcon, SunIcon } from "@phosphor-icons/react";
 import {
   Button,
   type CSS,
@@ -8,7 +8,7 @@ import {
   useColorMode,
   useColorModeValue,
 } from "@yamada-ui/react";
-import { MadamisNavigation } from "./madamis/MadamisNavigation";
+import { MadamisNavigation } from "../../features/navigation/components/MadamisNavigation";
 
 export const Header = () => {
   const bg = useColorModeValue<
@@ -20,8 +20,9 @@ export const Header = () => {
     <HStack
       bg={bg}
       justify="space-between"
-      p="md"
       pos="sticky"
+      px="md"
+      py="xs"
       shadow="md"
       top="0"
       zIndex="2"
@@ -58,9 +59,9 @@ const ColorModeToggle = () => {
       size="lg"
     >
       {colorMode === "light" ? (
-        <MoonStars size="1.6rem" weight="fill" />
+        <MoonStarsIcon size="1.6rem" weight="fill" />
       ) : (
-        <Sun size="1.6rem" weight="fill" />
+        <SunIcon size="1.6rem" weight="fill" />
       )}
     </IconButton>
   );
