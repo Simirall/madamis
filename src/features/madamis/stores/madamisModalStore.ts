@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
 type MadamisModalState = {
-  open: boolean;
   madamisId?: number;
+  open: boolean;
 };
 
 type MadamisModalAction = {
@@ -14,9 +14,9 @@ type MadamisModalAction = {
 export const useMadamisModalStore = create<
   MadamisModalState & MadamisModalAction
 >((set) => ({
-  open: false,
+  createOpen: () => set(() => ({ madamisId: undefined, open: true })),
+  editOpen: (id) => set(() => ({ madamisId: id, open: true })),
   madamisId: undefined,
-  createOpen: () => set(() => ({ open: true })),
-  editOpen: (id) => set(() => ({ open: true, madamisId: id })),
-  onClose: () => set(() => ({ open: false, madamisId: undefined })),
+  onClose: () => set(() => ({ madamisId: undefined, open: false })),
+  open: false,
 }));

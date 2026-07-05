@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
 type GameModalState = {
-  open: boolean;
   madamisId?: number;
+  open: boolean;
 };
 
 type GameModalAction = {
@@ -12,10 +12,9 @@ type GameModalAction = {
 
 export const useGameModalStore = create<GameModalState & GameModalAction>(
   (set) => ({
-    open: false,
+    createOpen: (madamisId) => set(() => ({ madamisId, open: true })),
     madamisId: undefined,
-    createOpen: (madamisId) =>
-      set(() => ({ open: true, madamisId: madamisId })),
-    onClose: () => set(() => ({ open: false, madamisId: undefined })),
+    onClose: () => set(() => ({ madamisId: undefined, open: false })),
+    open: false,
   }),
 );

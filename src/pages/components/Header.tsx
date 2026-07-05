@@ -1,4 +1,4 @@
-import { MoonStars, Sun } from "@phosphor-icons/react";
+import { MoonStarsIcon, SunIcon } from "@phosphor-icons/react";
 import {
   Button,
   type CSS,
@@ -8,35 +8,43 @@ import {
   useColorMode,
   useColorModeValue,
 } from "@yamada-ui/react";
+import { useMadamisPageParam } from "../../features/madamis/hooks/useMadamisPageParam";
+import { MadamisNavigation } from "../../features/navigation/components/MadamisNavigation";
 
 export const Header = () => {
+  const { resetPage } = useMadamisPageParam();
   const bg = useColorModeValue<
     Token<CSS.Property.Background, "colors">,
     Token<CSS.Property.Background, "colors">
-  >("emerald.100", "emerald.700");
+  >("emerald.100", "emerald.800");
 
   return (
     <HStack
       bg={bg}
       justify="space-between"
-      p="md"
-      top="0"
       pos="sticky"
-      zIndex="2"
+      px="md"
+      py="xs"
       shadow="md"
+      top="0"
+      zIndex="2"
     >
       <Button
-        size="xl"
-        fontSize="3xl"
         colorScheme="emerald"
-        variant="ghost"
+        fontSize="3xl"
         onClick={() => {
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          resetPage();
+          window.scrollTo({ behavior: "smooth", top: 0 });
         }}
+        size="xl"
+        variant="ghost"
       >
         J∞マダミス部
       </Button>
-      <ColorModeToggle />
+      <HStack>
+        <MadamisNavigation />
+        <ColorModeToggle />
+      </HStack>
     </HStack>
   );
 };
@@ -46,17 +54,18 @@ const ColorModeToggle = () => {
 
   return (
     <IconButton
+      aria-label="色モードを切り替え"
       colorScheme="amber"
       fullRounded
-      size="lg"
       onClick={() => {
         toggleColorMode();
       }}
+      size="lg"
     >
       {colorMode === "light" ? (
-        <MoonStars size="1.6rem" weight="fill" />
+        <MoonStarsIcon size="1.6rem" weight="fill" />
       ) : (
-        <Sun size="1.6rem" weight="fill" />
+        <SunIcon size="1.6rem" weight="fill" />
       )}
     </IconButton>
   );

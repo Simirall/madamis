@@ -10,25 +10,30 @@ app.route("/api", api).get("*", (c) => {
       <html lang="ja">
         <head>
           <meta charSet="utf-8" />
+          <meta content="light dark" name="color-scheme" />
           <meta content="width=device-width, initial-scale=1" name="viewport" />
           <title>j∞マダミス部</title>
+          <style>{`
+            :root {
+              color-scheme: light dark;
+              accent-color: #16a34a;
+            }
+          `}</style>
           <link
-            rel="shortcut icon"
             href="/static/icon.svg"
+            rel="shortcut icon"
             type="image/svg+xml"
           />
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" />
+          <link href="https://fonts.googleapis.com" rel="preconnect" />
+          <link href="https://fonts.gstatic.com" rel="preconnect" />
           <link
             href="https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap"
             rel="stylesheet"
           ></link>
           {import.meta.env.PROD ? (
-            <>
-              <script type="module" src="/static/client.js"></script>
-            </>
+            <script src="/static/client.js" type="module"></script>
           ) : (
-            <script type="module" src="/src/client.tsx"></script>
+            <script src="/src/client.tsx" type="module"></script>
           )}
         </head>
         <body>

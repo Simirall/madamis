@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { userApp } from "./apis/user";
-import { madamisApp } from "./apis/madamis";
 import { gamesApp } from "./apis/game";
+import { madamisApp } from "./apis/madamis";
+import { userApp } from "./apis/user";
 
 export const api = new Hono<{ Bindings: Env }>();
 

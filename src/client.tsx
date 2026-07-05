@@ -6,11 +6,9 @@ import { config, theme } from "./theme";
 
 const Index = () => {
   return (
-    <>
-      <UIProvider config={config} theme={theme}>
-        <App />
-      </UIProvider>
-    </>
+    <UIProvider config={config} theme={theme}>
+      <App />
+    </UIProvider>
   );
 };
 

@@ -7,3 +7,7 @@ binding = "DB"
 database_name = "madamis-db"
 database_id = "8c7855a5-36c2-4d5d-b027-c1ee7fad2436"
 preview_database_id = "DB"
+
+[vars]
+NODE_VERSION = 24
+PNPM_VERSIon = 11

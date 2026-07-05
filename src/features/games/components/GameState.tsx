@@ -1,31 +1,27 @@
 import { Card, HStack, Tag, VStack, Wrap } from "@yamada-ui/react";
-import type { InferResponseType } from "hono";
-import { hc } from "hono/client";
 import type { FC } from "react";
-import type { AppType } from "../../../api";
 import { gm } from "../../../constants/gmRequired";
-import { DeleteGameButton } from "./DeleteGameModal";
-
-const client = hc<AppType>("/api");
+import type { MadamisGame } from "../../madamis/hooks/useMadamisList";
+import { DeleteGameButton } from "./DeleteGameButton";
 
 export const GameState: FC<{
-  game: InferResponseType<typeof client.madamis.$get>[number]["games"][number];
+  game: MadamisGame;
   gmRequired: (typeof gm)[keyof typeof gm];
   player: number;
 }> = ({ game, gmRequired, player }) => {
   const date = new Date(game.date).toLocaleDateString("ja-JP");
 
   return (
-    <Card p="sm" shadow="md">
-      <VStack gap="sm">
-        <HStack gap="sm">
+    <Card.Root borderRadius="md" p="sm" shadow="sm" w="full">
+      <VStack gap="xs">
+        <HStack gap="sm" justify="space-between" w="full">
           <Tag colorScheme="blue" size="sm">
-            プレイ日時: {date}
+            プレイ日: {date}
           </Tag>
           <DeleteGameButton gameId={game.id} />
         </HStack>
         <Wrap gap="sm" justify="center">
-          {game.gameUsers.map((u) => {
+          {game.gameUsers.map((gameUser) => {
             const isGm =
               gmRequired === gm.required
                 ? true
@@ -35,17 +31,17 @@ export const GameState: FC<{
 
             return (
               <Tag
-                key={u.user.id}
+                colorScheme={gameUser.gm ? "orange" : "purple"}
+                key={gameUser.user.id}
                 size="sm"
-                colorScheme={u.gm ? "orange" : "purple"}
-                variant={u.gm && isGm ? "solid" : "subtle"}
+                variant={gameUser.gm && isGm ? "solid" : "subtle"}
               >
-                {u.user.name}
+                {gameUser.user.name}
               </Tag>
             );
           })}
         </Wrap>
       </VStack>
-    </Card>
+    </Card.Root>
   );
 };
