@@ -16,6 +16,7 @@ export const DeleteGameButton: FC<{ gameId: number }> = ({ gameId }) => {
   return (
     <>
       <IconButton
+        aria-label="試合履歴を削除"
         colorScheme="red"
         fullRounded
         onClick={onOpen}

@@ -1,4 +1,4 @@
-import { Button, Text } from "@yamada-ui/react";
+import { Button, Tag, Text, VStack } from "@yamada-ui/react";
 import { Loader } from "../../../shared/components/Loader";
 import { useMarkMadamisAsBought } from "../../madamis/hooks/useMadamisActions";
 import type { MadamisListItem } from "../../madamis/hooks/useMadamisList";
@@ -57,5 +57,20 @@ export const AddGameButton = ({ madamis }: { madamis: MadamisListItem }) => {
     );
   }
 
-  return <Button disabled>プレイ済</Button>;
+  return (
+    <VStack align="stretch" gap="xs" w="full">
+      <Tag
+        colorScheme="gray"
+        justifyContent="center"
+        size="md"
+        variant="surface"
+        w="full"
+      >
+        プレイ済
+      </Tag>
+      <Text color="gray" fontSize="xs" textAlign="center">
+        追加できるプレイヤーが足りません
+      </Text>
+    </VStack>
+  );
 };

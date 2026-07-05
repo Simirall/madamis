@@ -1,4 +1,4 @@
-import { Container } from "@yamada-ui/react";
+import { Box, Container } from "@yamada-ui/react";
 import { GameModal } from "../features/games/components/GameModal";
 import { AddMadamisButton } from "../features/madamis/components/AddMadamisButton";
 import { MadamisContainer } from "../features/madamis/components/MadamisList";
@@ -7,7 +7,7 @@ import { Header } from "./components/Header";
 
 export const App = () => {
   return (
-    <>
+    <Box bg={["gray.50", "black"]} minH="100vh">
       <Header />
       <AddMadamisButton />
       <Container.Root maxW="full" minH="full" p="4">
@@ -15,6 +15,6 @@ export const App = () => {
       </Container.Root>
       <MadamisModal />
       <GameModal />
-    </>
+    </Box>
   );
 };

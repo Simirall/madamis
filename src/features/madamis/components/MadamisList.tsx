@@ -1,9 +1,11 @@
 import {
+  CaretDownIcon,
+  CaretUpIcon,
   LinkIcon,
-  NuclearPlantIcon,
   PencilSimpleIcon,
 } from "@phosphor-icons/react";
 import {
+  Box,
   Button,
   Card,
   EmptyState,
@@ -12,9 +14,11 @@ import {
   IconButton,
   Tag,
   Text,
+  Tooltip,
   VStack,
+  Wrap,
 } from "@yamada-ui/react";
-import { type FC, useEffect, useRef } from "react";
+import { type FC, useEffect, useRef, useState } from "react";
 import {
   gmRequired,
   gmRequiredBadgeColor,
@@ -23,8 +27,13 @@ import { Loader } from "../../../shared/components/Loader";
 import { AddGameButton } from "../../games/components/AddGameButton";
 import { GameState } from "../../games/components/GameState";
 import {
+  getMadamisNavigationActiveItems,
+  getSortSummary,
+} from "../../navigation/options";
+import {
   madamisPageSize,
   useMadamisNavigationRevision,
+  useMadamisNavigationStore,
 } from "../../navigation/store";
 import { type MadamisListItem, useMadamisList } from "../hooks/useMadamisList";
 import { useMadamisPageParam } from "../hooks/useMadamisPageParam";
@@ -69,12 +78,10 @@ export const MadamisContainer = () => {
 
   return (
     <VStack align="center" gap="sm">
-      <Text color="gray" fontSize="sm" textAlign="end" w="full">
-        {start} - {end} / {madamis.total} 件
-      </Text>
+      <MadamisListToolbar end={end} start={start} total={madamis.total} />
       <Grid
-        gap="md"
-        gridTemplateColumns="repeat(auto-fit, minmax(350px, 1fr))"
+        gap="sm"
+        gridTemplateColumns="repeat(auto-fit, minmax(320px, 1fr))"
         justifyContent="center"
         justifyItems="center"
         w="full"
@@ -86,6 +93,66 @@ export const MadamisContainer = () => {
         onChange={updatePage}
         totalPages={madamis.totalPages}
       />
+    </VStack>
+  );
+};
+
+const MadamisListToolbar: FC<{
+  end: number;
+  start: number;
+  total: number;
+}> = ({ end, start, total }) => {
+  const {
+    applyDraft,
+    gmRequired: selectedGmRequired,
+    onlyBought,
+    onlyNotPlayed,
+    players,
+    sortKey,
+    sortOrder,
+  } = useMadamisNavigationStore();
+  const draft = {
+    gmRequired: selectedGmRequired,
+    onlyBought,
+    onlyNotPlayed,
+    players,
+    sortKey,
+    sortOrder,
+  };
+  const activeItems = getMadamisNavigationActiveItems(draft);
+
+  const clearItem = (key: (typeof activeItems)[number]["key"]) => {
+    applyDraft({
+      ...draft,
+      [key]:
+        key === "onlyBought" || key === "onlyNotPlayed" ? false : undefined,
+    });
+  };
+
+  return (
+    <VStack align="stretch" gap="xs" w="full">
+      <HStack justify="space-between" wrap="wrap">
+        <Wrap gap="xs">
+          <Tag colorScheme="gray" size="sm" variant="surface">
+            並び: {getSortSummary(sortKey, sortOrder)}
+          </Tag>
+          {activeItems.length > 0 &&
+            activeItems.map((item) => (
+              <Button
+                colorScheme={item.colorScheme}
+                key={item.key}
+                onClick={() => clearItem(item.key)}
+                size="xs"
+                variant="surface"
+              >
+                {item.label} ×
+              </Button>
+            ))}
+        </Wrap>
+        <Text color="gray" fontSize="sm">
+          {start} - {end} / {total} 件
+        </Text>
+      </HStack>
     </VStack>
   );
 };
@@ -110,52 +177,93 @@ const MadamisCard: FC<{
   madamis: MadamisListItem;
 }> = ({ madamis }) => {
   const { editOpen } = useMadamisModalStore();
+  const [showHistory, setShowHistory] = useState(false);
+  const sortedGames = [...madamis.games].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+  const visibleGames = showHistory ? sortedGames : sortedGames.slice(0, 1);
 
   return (
     <Card.Root
       as={Grid}
+      borderRadius="md"
       display="grid"
-      gridRow="span 4"
+      gridRow="span 5"
       gridTemplateRows="subgrid"
-      p="md"
-      w="20rem"
+      p="sm"
+      shadow={["md", "sm"]}
+      w="19.5rem"
     >
-      <Button
-        as="a"
-        colorScheme="lime"
-        h="full"
-        href={madamis.link}
-        lineHeight="2"
-        minH="3rem"
-        startIcon={<LinkIcon fontSize="1.2rem" weight="bold" />}
-        target="_blank"
-        textWrap="wrap"
-        variant="surface"
-      >
-        {madamis.title}
-      </Button>
-      <HStack>
-        <Tag colorScheme={gmRequiredBadgeColor[madamis.gmRequired]} size="lg">
+      <HStack align="center" gap="xs">
+        <Button
+          as="a"
+          colorScheme="lime"
+          flex="1"
+          h="full"
+          href={madamis.link}
+          lineHeight="2"
+          minH="3rem"
+          startIcon={<LinkIcon fontSize="1.2rem" weight="bold" />}
+          target="_blank"
+          textWrap="wrap"
+          variant="surface"
+        >
+          {madamis.title}
+        </Button>
+        <Tooltip
+          content={
+            madamis.games.length > 0
+              ? "試合履歴があるため作品情報は編集できません"
+              : "作品情報を編集"
+          }
+        >
+          <IconButton
+            aria-label="作品情報を編集"
+            colorScheme="lime"
+            disabled={madamis.games.length > 0}
+            flexShrink={0}
+            fullRounded
+            onClick={() => {
+              editOpen(madamis.id);
+            }}
+            variant="subtle"
+          >
+            <PencilSimpleIcon fontSize="1.2rem" />
+          </IconButton>
+        </Tooltip>
+      </HStack>
+      <Wrap gap="xs">
+        <Tag colorScheme={gmRequiredBadgeColor[madamis.gmRequired]} size="md">
           {gmRequired[madamis.gmRequired]}
         </Tag>
-        <Tag colorScheme="violet" size="lg">
+        <Tag colorScheme="violet" size="md">
           PL: {madamis.player}人
         </Tag>
-        <IconButton
-          colorScheme="lime"
-          disabled={madamis.games.length > 0}
-          fullRounded
-          onClick={() => {
-            editOpen(madamis.id);
-          }}
-          variant="subtle"
-        >
-          <PencilSimpleIcon fontSize="1.4rem" />
-        </IconButton>
-      </HStack>
+      </Wrap>
       {madamis.games.length > 0 ? (
-        <VStack alignSelf="center" gap="sm">
-          {madamis.games.map((game) => (
+        <VStack alignSelf="center" gap="xs">
+          <HStack justify="space-between" w="full">
+            <Text color="gray" fontSize="xs">
+              履歴 {madamis.games.length}件
+            </Text>
+            {madamis.games.length > 1 ? (
+              <Button
+                endIcon={
+                  showHistory ? (
+                    <CaretUpIcon weight="bold" />
+                  ) : (
+                    <CaretDownIcon weight="bold" />
+                  )
+                }
+                onClick={() => setShowHistory((value) => !value)}
+                size="xs"
+                variant="ghost"
+              >
+                {showHistory ? "閉じる" : "履歴を見る"}
+              </Button>
+            ) : null}
+          </HStack>
+          {visibleGames.map((game) => (
             <GameState
               game={game}
               gmRequired={madamis.gmRequired as 0 | 1 | 2}
@@ -165,12 +273,17 @@ const MadamisCard: FC<{
           ))}
         </VStack>
       ) : (
-        <EmptyState.Root>
-          <EmptyState.Indicator>
-            <NuclearPlantIcon weight="duotone" />
-          </EmptyState.Indicator>
-          <EmptyState.Title>No Game</EmptyState.Title>
-        </EmptyState.Root>
+        <Box
+          alignSelf="center"
+          borderColor={["blackAlpha.200", "whiteAlpha.200"]}
+          borderRadius="md"
+          borderWidth="1px"
+          p="sm"
+        >
+          <Text color="gray" fontSize="sm" textAlign="center">
+            試合履歴なし
+          </Text>
+        </Box>
       )}
       <AddGameButton madamis={madamis} />
     </Card.Root>

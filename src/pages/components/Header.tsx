@@ -14,7 +14,7 @@ export const Header = () => {
   const bg = useColorModeValue<
     Token<CSS.Property.Background, "colors">,
     Token<CSS.Property.Background, "colors">
-  >("emerald.100", "emerald.700");
+  >("emerald.100", "emerald.800");
 
   return (
     <HStack
@@ -51,6 +51,7 @@ const ColorModeToggle = () => {
 
   return (
     <IconButton
+      aria-label="色モードを切り替え"
       colorScheme="amber"
       fullRounded
       onClick={() => {

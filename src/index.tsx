@@ -10,8 +10,15 @@ app.route("/api", api).get("*", (c) => {
       <html lang="ja">
         <head>
           <meta charSet="utf-8" />
+          <meta content="light dark" name="color-scheme" />
           <meta content="width=device-width, initial-scale=1" name="viewport" />
           <title>j∞マダミス部</title>
+          <style>{`
+            :root {
+              color-scheme: light dark;
+              accent-color: #16a34a;
+            }
+          `}</style>
           <link
             href="/static/icon.svg"
             rel="shortcut icon"

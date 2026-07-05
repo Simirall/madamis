@@ -12,11 +12,11 @@ export const GameState: FC<{
   const date = new Date(game.date).toLocaleDateString("ja-JP");
 
   return (
-    <Card.Root p="sm" shadow="md">
-      <VStack gap="sm">
-        <HStack gap="sm">
+    <Card.Root borderRadius="md" p="sm" shadow="sm" w="full">
+      <VStack gap="xs">
+        <HStack gap="sm" justify="space-between" w="full">
           <Tag colorScheme="blue" size="sm">
-            プレイ日時: {date}
+            プレイ日: {date}
           </Tag>
           <DeleteGameButton gameId={game.id} />
         </HStack>

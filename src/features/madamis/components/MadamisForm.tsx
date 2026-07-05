@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  Box,
   Button,
   Field,
   Input,
@@ -67,7 +68,12 @@ export const MadamisForm: FC<MadamisFormProps> = ({
   };
 
   return (
-    <VStack as="form" gap="md" onSubmit={handleSubmit(onSubmit)}>
+    <VStack
+      align="stretch"
+      as="form"
+      gap="md"
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <Field.Root
         errorMessage={errors.title?.message}
         invalid={!!errors.title}
@@ -104,38 +110,48 @@ export const MadamisForm: FC<MadamisFormProps> = ({
           )}
         />
       </Field.Root>
-      <Controller
-        control={control}
-        name="gmRequired"
-        render={({ field }) => (
-          <SegmentedControl.Root
-            colorScheme="yellow"
-            items={gmRequired.map((label, index) => ({
-              label,
-              value: index.toString(),
-            }))}
-            onChange={(value) => {
-              field.onChange(Number(value));
-            }}
-            value={String(field.value)}
-          />
-        )}
-      />
-      <Button colorScheme="lime" loading={isSubmitting} type="submit">
+      <Field.Root label="GM種別" name="gmRequired">
+        <Controller
+          control={control}
+          name="gmRequired"
+          render={({ field }) => (
+            <SegmentedControl.Root
+              colorScheme="yellow"
+              items={gmRequired.map((label, index) => ({
+                label,
+                value: index.toString(),
+              }))}
+              onChange={(value) => {
+                field.onChange(Number(value));
+              }}
+              value={String(field.value)}
+              w="full"
+            />
+          )}
+        />
+      </Field.Root>
+      <Button colorScheme="lime" loading={isSubmitting} type="submit" w="full">
         {editData ? "更新" : "追加"}
       </Button>
-      {editData?.bought ? (
-        <Button
-          colorScheme="gray"
-          loading={notBoughtLoading}
-          onClick={onMarkAsNotBought}
-          type="button"
-        >
-          未購入に戻す
-        </Button>
-      ) : null}
-      {madamisId ? (
-        <DeleteMadamisButton madamisId={madamisId} onDeleted={onSaved} />
+      {editData?.bought || madamisId ? (
+        <Box borderTopWidth="1px" pt="md" w="full">
+          <VStack align="stretch" gap="sm">
+            {editData?.bought ? (
+              <Button
+                colorScheme="gray"
+                loading={notBoughtLoading}
+                onClick={onMarkAsNotBought}
+                type="button"
+                variant="surface"
+              >
+                未購入に戻す
+              </Button>
+            ) : null}
+            {madamisId ? (
+              <DeleteMadamisButton madamisId={madamisId} onDeleted={onSaved} />
+            ) : null}
+          </VStack>
+        </Box>
       ) : null}
     </VStack>
   );

@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  Box,
   Button,
   Calendar,
   Field,
@@ -69,6 +70,10 @@ export const GameForm: FC<GameFormProps> = ({
   });
   const selectedGm = watch("gm");
   const selectedPlayers = watch("players");
+  const selectedGmId = Number.parseInt(selectedGm, 10);
+  const selectedPlayerCount = selectedPlayers.length;
+  const playerCountColor =
+    selectedPlayerCount === madamis.player ? "lime" : "orange";
 
   const onSubmit = async (data: GameFormValues) => {
     await addGame(data);
@@ -77,9 +82,16 @@ export const GameForm: FC<GameFormProps> = ({
   };
 
   return (
-    <VStack as="form" gap="md" onSubmit={handleSubmit(onSubmit)}>
-      <Heading>{madamis.title}</Heading>
-      <HStack>
+    <VStack
+      align="stretch"
+      as="form"
+      gap="md"
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      <Heading fontSize="2xl" lineHeight="1.4">
+        {madamis.title}
+      </Heading>
+      <HStack wrap="wrap">
         <Tag colorScheme={gmRequiredBadgeColor[madamis.gmRequired]} size="lg">
           {gmRequired[madamis.gmRequired]}
         </Tag>
@@ -99,14 +111,29 @@ export const GameForm: FC<GameFormProps> = ({
           render={({ field }) => (
             <Select.Root
               items={userItems}
-              onChange={field.onChange}
+              onChange={(value) => {
+                field.onChange(value);
+
+                if (madamis.gmRequired === gm.required) {
+                  setValue(
+                    "players",
+                    selectedPlayers.filter((player) => player !== value),
+                    { shouldValidate: true },
+                  );
+                }
+              }}
               value={field.value}
             />
           )}
         />
       </Field.Root>
       <VStack gap="sm">
-        <Text>プレイヤー</Text>
+        <HStack justify="space-between" w="full">
+          <Text>プレイヤー</Text>
+          <Tag colorScheme={playerCountColor} size="sm" variant="surface">
+            {selectedPlayerCount} / {madamis.player}人
+          </Tag>
+        </HStack>
         <ToggleGroup.Root
           as={Wrap}
           justifyContent="center"
@@ -115,27 +142,26 @@ export const GameForm: FC<GameFormProps> = ({
           }}
           value={selectedPlayers}
         >
-          {users
-            .filter(
-              (user) =>
-                !playedPlayers.includes(user.id.toString()) &&
-                !(
-                  madamis.gmRequired === gm.required &&
-                  user.id === Number.parseInt(selectedGm, 10)
-                ),
-            )
-            .map((user) => (
+          {users.map((user) => {
+            const userId = user.id.toString();
+            const isAlreadyPlayed = playedPlayers.includes(userId);
+            const isSelectedGm =
+              madamis.gmRequired === gm.required && user.id === selectedGmId;
+
+            return (
               <ToggleGroup.Item
                 colorScheme="orange"
+                disabled={isAlreadyPlayed || isSelectedGm}
                 key={user.id}
                 px="sm"
                 size="sm"
-                value={user.id.toString()}
+                value={userId}
                 variant="outline"
               >
                 {user.name}
               </ToggleGroup.Item>
-            ))}
+            );
+          })}
         </ToggleGroup.Root>
         {errors.players ? (
           <Text color="red" fontSize="sm">
@@ -153,12 +179,14 @@ export const GameForm: FC<GameFormProps> = ({
           control={control}
           name="date"
           render={({ field }) => (
-            <Calendar.Root
-              {...field}
-              locale="ja-JP"
-              startDayOfWeek="sunday"
-              w="full"
-            />
+            <Box maxW="28rem" w="full">
+              <Calendar.Root
+                {...field}
+                locale="ja-JP"
+                startDayOfWeek="sunday"
+                w="full"
+              />
+            </Box>
           )}
         />
       </Field.Root>

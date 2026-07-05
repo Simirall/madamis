@@ -1,5 +1,6 @@
 import { FunnelSimpleIcon } from "@phosphor-icons/react";
 import {
+  Box,
   Button,
   CheckboxCard,
   HStack,
@@ -11,6 +12,7 @@ import {
 } from "@yamada-ui/react";
 import { useState } from "react";
 import {
+  getMadamisNavigationActiveCount,
   gmRequiredItems,
   playerItems,
   sortKeyItems,
@@ -52,15 +54,51 @@ export const MadamisNavigation = () => {
   };
 
   const onClose = () => {
+    setDraft(getDraft());
+    setOpen(false);
+  };
+
+  const onApply = () => {
     applyDraft(draft);
     setOpen(false);
   };
 
+  const activeCount = getMadamisNavigationActiveCount(currentDraft);
+
   return (
     <>
-      <IconButton colorScheme="sky" fullRounded onClick={onOpen} size="lg">
-        <FunnelSimpleIcon size="1.6rem" weight="bold" />
-      </IconButton>
+      <Box pos="relative">
+        <IconButton
+          aria-label="表示条件を開く"
+          colorScheme="sky"
+          fullRounded
+          onClick={onOpen}
+          size="lg"
+        >
+          <FunnelSimpleIcon size="1.6rem" weight="bold" />
+        </IconButton>
+        {activeCount > 0 ? (
+          <Box
+            alignItems="center"
+            bg="red.500"
+            borderColor="white"
+            borderRadius="full"
+            borderWidth="2px"
+            color="white"
+            display="flex"
+            fontSize="xs"
+            fontWeight="bold"
+            h="1.35rem"
+            justifyContent="center"
+            minW="1.35rem"
+            pos="absolute"
+            right="-0.15rem"
+            top="-0.15rem"
+          >
+            {activeCount}
+          </Box>
+        ) : null}
+      </Box>
       <Modal.Root onClose={onClose} open={open} size="lg">
         <Modal.Content>
           <Modal.Header>
@@ -190,6 +228,14 @@ export const MadamisNavigation = () => {
               </VStack>
             </VStack>
           </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={onClose} variant="ghost">
+              キャンセル
+            </Button>
+            <Button colorScheme="lime" onClick={onApply}>
+              適用
+            </Button>
+          </Modal.Footer>
         </Modal.Content>
       </Modal.Root>
     </>
