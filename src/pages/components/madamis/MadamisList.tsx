@@ -18,7 +18,10 @@ import {
 import type { MadamisListItem } from "../../hooks/useMadamisList";
 import { useMadamisList } from "../../hooks/useMadamisList";
 import { useMadamisModalStore } from "../../stores/madamisModalStore";
-import { madamisNavigationChangedEvent } from "../../stores/madamisNavigationStore";
+import {
+  madamisNavigationChangedEvent,
+  madamisPageSize,
+} from "../../stores/madamisNavigationStore";
 import { AddGameButton } from "./../games/AddGamesButton";
 import { GameState } from "./../games/GameState";
 import { Loader } from "../Loader";
@@ -39,6 +42,7 @@ export const MadamisContainer = () => {
   useEffect(() => {
     const onNavigationChanged = () => {
       setPage(getInitialPage());
+      window.scrollTo({ behavior: "smooth", top: 0 });
     };
 
     window.addEventListener(madamisNavigationChangedEvent, onNavigationChanged);
@@ -56,14 +60,22 @@ export const MadamisContainer = () => {
     params.set("page", String(nextPage));
     window.history.replaceState(null, "", `?${params.toString()}`);
     setPage(nextPage);
+    window.scrollTo({ behavior: "smooth", top: 0 });
   };
 
   if (!madamis) {
     return <Loader />;
   }
 
+  const start =
+    madamis.total === 0 ? 0 : (madamis.page - 1) * madamisPageSize + 1;
+  const end = madamis.total === 0 ? 0 : start + madamis.items.length - 1;
+
   return (
     <VStack align="center" p="sm">
+      <Text color="gray" fontSize="sm" w="full">
+        {start} - {end} / {madamis.total} 件
+      </Text>
       <Grid
         gap="md"
         gridTemplateColumns="repeat(auto-fit, minmax(350px, 1fr))"
@@ -76,7 +88,6 @@ export const MadamisContainer = () => {
       <MadamisPagination
         currentPage={madamis.page}
         onChange={updatePage}
-        total={madamis.total}
         totalPages={madamis.totalPages}
       />
     </VStack>
@@ -173,16 +184,12 @@ const MadamisCard: FC<{
 const MadamisPagination: FC<{
   currentPage: number;
   onChange: (page: number) => void;
-  total: number;
   totalPages: number;
-}> = ({ currentPage, onChange, total, totalPages }) => {
+}> = ({ currentPage, onChange, totalPages }) => {
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   return (
     <VStack gap="sm">
-      <Text color="gray" fontSize="sm">
-        {total}件
-      </Text>
       <HStack flexWrap="wrap" justifyContent="center">
         <Button
           disabled={currentPage <= 1}

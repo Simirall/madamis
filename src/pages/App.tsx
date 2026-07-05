@@ -10,7 +10,7 @@ export const App = () => {
     <>
       <Header />
       <AddMadamisButton />
-      <Container.Root maxW="full">
+      <Container.Root maxW="full" minH="full" p="4">
         <MadamisContainer />
       </Container.Root>
       <MadamisModal />
