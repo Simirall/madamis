@@ -35,18 +35,18 @@ const DeleteMadamisModal: FC<{
   };
 
   return (
-    <Modal open={opened} onClose={onClose} size="sm">
+    <Modal onClose={onClose} open={opened} size="sm">
       <ModalHeader>削除しますか？</ModalHeader>
       <ModalBody>
         <HStack>
-          <Button colorScheme="red" onClick={onDelete} loading={loading}>
+          <Button colorScheme="red" loading={loading} onClick={onDelete}>
             削除する
           </Button>
           <Button
             colorScheme="sky"
-            variant="subtle"
-            onClick={onClose}
             loading={loading}
+            onClick={onClose}
+            variant="subtle"
           >
             削除しない
           </Button>
@@ -63,13 +63,13 @@ export const DeleteMadamisButton: FC<{ madamisId: number }> = ({
 
   return (
     <>
-      <Button colorScheme="red" variant="surface" onClick={onOpen}>
+      <Button colorScheme="red" onClick={onOpen} variant="surface">
         削除
       </Button>
       <DeleteMadamisModal
         madamisId={madamisId}
-        opened={open}
         onClose={onClose}
+        opened={open}
       />
     </>
   );

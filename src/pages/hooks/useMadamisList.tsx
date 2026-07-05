@@ -1,5 +1,5 @@
-import useSWR from "swr";
 import { hc } from "hono/client";
+import useSWR from "swr";
 import type { AppType } from "../../api";
 
 const client = hc<AppType>;
@@ -11,5 +11,5 @@ export const useMadamisList = () => {
       .then((res) => res.json()),
   );
 
-  return { data, mutate, isLoading };
+  return { data, isLoading, mutate };
 };

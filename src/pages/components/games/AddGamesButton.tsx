@@ -25,11 +25,11 @@ export const AddGameButton = ({ madamisId }: { madamisId: number }) => {
         (playedPlayers + (madamis.gmRequired === gm.required ? 0 : 1)) >
       madamis.player ? (
         <Button
-          variant="surface"
           colorScheme="lime"
           onClick={() => {
             createOpen(madamisId);
           }}
+          variant="surface"
         >
           試合を追加
         </Button>

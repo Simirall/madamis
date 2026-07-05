@@ -8,21 +8,21 @@ export const AddMadamisButton = () => {
   return (
     <>
       <Box
-        pos="fixed"
         bottom="0"
-        right="0"
         p="sm"
+        pos="fixed"
+        right="0"
         style={{
           zIndex: 1,
         }}
       >
         <IconButton
-          variant="solid"
-          colorScheme="orange"
-          size="xl"
-          fullRounded
           aria-label="Add Madamis"
+          colorScheme="orange"
+          fullRounded
           onClick={createOpen}
+          size="xl"
+          variant="solid"
         >
           <Plus fontSize="1.6rem" />
         </IconButton>

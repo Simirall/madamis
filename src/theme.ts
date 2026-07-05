@@ -1,9 +1,9 @@
-import { type ThemeConfig, extendTheme } from "@yamada-ui/react";
+import { extendTheme, type ThemeConfig } from "@yamada-ui/react";
 
 export const theme = extendTheme({
   fonts: {
-    heading: `"Yusei Magic", sans-serif`,
     body: `"Yusei Magic", sans-serif`,
+    heading: `"Yusei Magic", sans-serif`,
   },
 })();
 

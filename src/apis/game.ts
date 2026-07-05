@@ -3,12 +3,12 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { z } from "zod";
-import { gameUsers, games } from "../../schema";
+import { games, gameUsers } from "../../schema";
 
 const gamesPostSchema = z.object({
-  madamisId: z.number().int(),
   date: z.string(),
   gm: z.number().int(),
+  madamisId: z.number().int(),
   players: z.array(z.number().int()),
 });
 
@@ -29,16 +29,16 @@ export const gamesApp = gamesApi
 
     await db.insert(gameUsers).values([
       {
-        userId: body.gm,
         gameId: gameResult.id,
         gm: 1,
+        userId: body.gm,
       },
       ...body.players
         .filter((u) => u !== body.gm)
         .map((p) => ({
-          userId: p,
           gameId: gameResult.id,
           gm: 0,
+          userId: p,
         })),
     ]);
 

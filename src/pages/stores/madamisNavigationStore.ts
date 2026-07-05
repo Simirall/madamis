@@ -18,8 +18,8 @@ export const useMadamisNavigationStore = create<
   onlyNotPlayed: false,
   onlyPlayable: false,
   players: undefined,
+  setPlayable: (playable: boolean) => set(() => ({ onlyPlayable: playable })),
 
   setPlayed: (played: boolean) => set(() => ({ onlyNotPlayed: played })),
-  setPlayable: (playable: boolean) => set(() => ({ onlyPlayable: playable })),
   setPlayers: (n: string) => set(() => ({ players: n })),
 }));

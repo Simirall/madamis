@@ -35,9 +35,9 @@ export const GameState: FC<{
 
             return (
               <Tag
+                colorScheme={u.gm ? "orange" : "purple"}
                 key={u.user.id}
                 size="sm"
-                colorScheme={u.gm ? "orange" : "purple"}
                 variant={u.gm && isGm ? "solid" : "subtle"}
               >
                 {u.user.name}

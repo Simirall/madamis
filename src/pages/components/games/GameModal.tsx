@@ -3,8 +3,8 @@ import { Calendar } from "@yamada-ui/calendar";
 import {
   Button,
   Fieldset,
-  HStack,
   Heading,
+  HStack,
   Modal,
   ModalBody,
   ModalHeader,
@@ -16,7 +16,7 @@ import {
   VStack,
   Wrap,
 } from "@yamada-ui/react";
-import { type InferResponseType, hc } from "hono/client";
+import { hc, type InferResponseType } from "hono/client";
 import type { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -46,11 +46,11 @@ export const GameModal = () => {
 
   return (
     <Modal
-      open={open}
+      closeOnOverlay={false}
       onClose={() => {
         onClose();
       }}
-      closeOnOverlay={false}
+      open={open}
       size="lg"
     >
       <ModalHeader>試合を追加</ModalHeader>
@@ -78,9 +78,9 @@ const GameForm: FC<{
   );
 
   const formSchema = z.object({
-    players: z.array(z.string()).length(madamis.player),
-    gm: z.string().refine((v) => userIds.includes(v)),
     date: z.date(),
+    gm: z.string().refine((v) => userIds.includes(v)),
+    players: z.array(z.string()).length(madamis.player),
   });
 
   type FormSchema = z.infer<typeof formSchema>;
@@ -94,19 +94,19 @@ const GameForm: FC<{
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
-      players: [],
-      gm: "1",
       date: new Date(),
+      gm: "1",
+      players: [],
     },
+    resolver: zodResolver(formSchema),
   });
 
   const onSubmit = async (data: FormSchema) => {
     const reqObj = {
-      madamisId: madamis.id,
       date: data.date.toISOString(),
       gm: Number.parseInt(data.gm),
+      madamisId: madamis.id,
       players: data.players.map((p) => Number.parseInt(p)),
     };
 
@@ -122,17 +122,17 @@ const GameForm: FC<{
     <VStack as="form" onSubmit={handleSubmit(onSubmit)}>
       <Heading>{madamis.title}</Heading>
       <HStack>
-        <Tag size="lg" colorScheme={gmRequiredBadgeColor[madamis.gmRequired]}>
+        <Tag colorScheme={gmRequiredBadgeColor[madamis.gmRequired]} size="lg">
           {gmRequired[madamis.gmRequired]}
         </Tag>
-        <Tag size="lg" colorScheme="violet">
+        <Tag colorScheme="violet" size="lg">
           PL: {madamis.player}人
         </Tag>
       </HStack>
       <Fieldset
-        legend={gmRole[madamis.gmRequired]}
-        invalid={!!errors.gm}
         errorMessage={errors.gm?.message}
+        invalid={!!errors.gm}
+        legend={gmRole[madamis.gmRequired]}
       >
         <NativeSelect
           items={users.map((u) => ({
@@ -145,12 +145,12 @@ const GameForm: FC<{
       <VStack gap="sm">
         <Text>プレイヤー</Text>
         <ToggleGroup
-          value={watch("players")}
+          as={Wrap}
+          justifyContent="center"
           onChange={(e) => {
             setValue("players", e);
           }}
-          as={Wrap}
-          justifyContent="center"
+          value={watch("players")}
         >
           {users
             .filter(
@@ -165,42 +165,42 @@ const GameForm: FC<{
             )
             .map((u) => (
               <Toggle
+                colorScheme="orange"
                 key={u.id}
                 px="sm"
                 size="sm"
-                colorScheme="orange"
-                variant="outline"
                 value={u.id.toString()}
+                variant="outline"
               >
                 {u.name}
               </Toggle>
             ))}
         </ToggleGroup>
         {errors.players && (
-          <Text size="sm" color="red">
+          <Text color="red" size="sm">
             {errors.players.message}
           </Text>
         )}
       </VStack>
       <Fieldset
-        legend="開催日"
-        invalid={!!errors.date}
         errorMessage={errors.date?.message}
+        invalid={!!errors.date}
+        legend="開催日"
       >
         <Controller
-          name="date"
           control={control}
+          name="date"
           render={({ field }) => (
             <Calendar
               {...field}
-              w="full"
               firstDayOfWeek="sunday"
               locale="ja-JP"
+              w="full"
             />
           )}
         />
       </Fieldset>
-      <Button type="submit" colorScheme="lime" loading={isSubmitting}>
+      <Button colorScheme="lime" loading={isSubmitting} type="submit">
         追加
       </Button>
     </VStack>

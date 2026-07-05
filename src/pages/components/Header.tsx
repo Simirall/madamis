@@ -20,19 +20,19 @@ export const Header = () => {
       bg={bg}
       justify="space-between"
       p="md"
-      top="0"
       pos="sticky"
-      zIndex="2"
       shadow="md"
+      top="0"
+      zIndex="2"
     >
       <Button
-        size="xl"
-        fontSize="3xl"
         colorScheme="emerald"
-        variant="ghost"
+        fontSize="3xl"
         onClick={() => {
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          window.scrollTo({ behavior: "smooth", top: 0 });
         }}
+        size="xl"
+        variant="ghost"
       >
         J∞マダミス部
       </Button>
@@ -48,10 +48,10 @@ const ColorModeToggle = () => {
     <IconButton
       colorScheme="amber"
       fullRounded
-      size="lg"
       onClick={() => {
         toggleColorMode();
       }}
+      size="lg"
     >
       {colorMode === "light" ? (
         <MoonStars size="1.6rem" weight="fill" />

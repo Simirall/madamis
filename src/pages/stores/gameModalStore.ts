@@ -12,10 +12,10 @@ type GameModalAction = {
 
 export const useGameModalStore = create<GameModalState & GameModalAction>(
   (set) => ({
-    open: false,
-    madamisId: undefined,
     createOpen: (madamisId) =>
-      set(() => ({ open: true, madamisId: madamisId })),
-    onClose: () => set(() => ({ open: false, madamisId: undefined })),
+      set(() => ({ madamisId: madamisId, open: true })),
+    madamisId: undefined,
+    onClose: () => set(() => ({ madamisId: undefined, open: false })),
+    open: false,
   }),
 );

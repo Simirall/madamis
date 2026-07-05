@@ -1,5 +1,5 @@
-import useSWR from "swr";
 import { hc } from "hono/client";
+import useSWR from "swr";
 import type { AppType } from "../../api";
 
 const client = hc<AppType>;

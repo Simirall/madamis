@@ -1,18 +1,17 @@
-import { drizzle } from "drizzle-orm/d1";
-import { Hono } from "hono";
-import { madamis } from "../../schema";
-import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
-
+import { drizzle } from "drizzle-orm/d1";
+import { Hono } from "hono";
+import { z } from "zod";
 import * as schema from "../../schema";
+import { madamis } from "../../schema";
 
 const madamisPostSchema = z.object({
-  title: z.string().min(1),
+  bought: z.boolean().transform((b) => Number(b)),
+  gmRequired: z.number().nonnegative().max(2),
   link: z.string().url(),
   player: z.number().int().min(1).max(6),
-  gmRequired: z.number().nonnegative().max(2),
-  bought: z.boolean().transform((b) => Number(b)),
+  title: z.string().min(1),
 });
 
 export const madamisPutSchema = madamisPostSchema.extend({

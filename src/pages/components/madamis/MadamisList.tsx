@@ -21,9 +21,9 @@ import { useMadamisList } from "../../hooks/useMadamisList";
 import { useUser } from "../../hooks/useUser";
 import { useMadamisModalStore } from "../../stores/madamisModalStore";
 import { useMadamisNavigationStore } from "../../stores/madamisNavigationStore";
-import { Loader } from "../Loader";
 import { AddGameButton } from "./../games/AddGamesButton";
 import { GameState } from "./../games/GameState";
+import { Loader } from "../Loader";
 import { MadamisNavigation } from "./MadamisNavigation";
 
 const client = hc<AppType>("/api");
@@ -37,14 +37,14 @@ export const MadamisContainer = () => {
   }
 
   return (
-    <VStack p="sm" align="center">
+    <VStack align="center" p="sm">
       <MadamisNavigation />
       <Grid
-        w="full"
         gap="md"
+        gridTemplateColumns="repeat(auto-fit, minmax(350px, 1fr))"
         justifyContent="center"
         justifyItems="center"
-        gridTemplateColumns="repeat(auto-fit, minmax(350px, 1fr))"
+        w="full"
       >
         <MadamisList madamis={madamis} users={users} />
       </Grid>
@@ -86,7 +86,7 @@ const MadamisList: FC<{
       return d.player + 1 === playerCount || d.player === playerCount;
     });
 
-  return filteredMadamisList.map((d) => <MadamisCard madamis={d} key={d.id} />);
+  return filteredMadamisList.map((d) => <MadamisCard key={d.id} madamis={d} />);
 };
 
 const MadamisCard: FC<{
@@ -96,39 +96,39 @@ const MadamisCard: FC<{
 
   return (
     <Card
-      w="20rem"
-      p="md"
-      display="grid"
       as={Grid}
-      gridTemplateRows="subgrid"
+      display="grid"
       gridRow="span 4"
+      gridTemplateRows="subgrid"
+      p="md"
+      w="20rem"
     >
       <Button
-        variant="surface"
-        colorScheme="lime"
-        textWrap="wrap"
-        minH="3rem"
-        h="full"
-        lineHeight="2"
         as="a"
+        colorScheme="lime"
+        h="full"
         href={madamis.link}
+        lineHeight="2"
+        minH="3rem"
+        startIcon={<Link fontSize="1.2rem" weight="bold" />}
         target="_blank"
-        startIcon={<Link weight="bold" fontSize="1.2rem" />}
+        textWrap="wrap"
+        variant="surface"
       >
         {madamis.title}
       </Button>
       <HStack>
-        <Tag size="lg" colorScheme={gmRequiredBadgeColor[madamis.gmRequired]}>
+        <Tag colorScheme={gmRequiredBadgeColor[madamis.gmRequired]} size="lg">
           {gmRequired[madamis.gmRequired]}
         </Tag>
-        <Tag size="lg" colorScheme="violet">
+        <Tag colorScheme="violet" size="lg">
           PL: {madamis.player}人
         </Tag>
         <IconButton
-          fullRounded
-          variant="subtle"
           colorScheme="lime"
           disabled={madamis.games.length > 0}
+          fullRounded
+          variant="subtle"
         >
           <PencilSimple
             fontSize="1.4rem"
@@ -142,17 +142,17 @@ const MadamisCard: FC<{
         <VStack alignSelf="center" gap="sm">
           {madamis.games.map((g) => (
             <GameState
-              key={g.id}
               game={g}
               gmRequired={madamis.gmRequired as 0 | 1 | 2}
+              key={g.id}
               player={madamis.player}
             />
           ))}
         </VStack>
       ) : (
         <EmptyState
-          title="No Game"
           indicator={<NuclearPlant weight="duotone" />}
+          title="No Game"
         />
       )}
       {madamis.bought ? (

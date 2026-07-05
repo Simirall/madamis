@@ -37,18 +37,18 @@ const DeleteGameModal: FC<{
   };
 
   return (
-    <Modal open={opened} onClose={onClose} size="sm">
+    <Modal onClose={onClose} open={opened} size="sm">
       <ModalHeader>削除しますか？</ModalHeader>
       <ModalBody>
         <HStack>
-          <Button colorScheme="red" onClick={onDelete} loading={loading}>
+          <Button colorScheme="red" loading={loading} onClick={onDelete}>
             削除する
           </Button>
           <Button
             colorScheme="sky"
-            variant="subtle"
-            onClick={onClose}
             loading={loading}
+            onClick={onClose}
+            variant="subtle"
           >
             削除しない
           </Button>
@@ -65,14 +65,14 @@ export const DeleteGameButton: FC<{ gameId: number }> = ({ gameId }) => {
     <>
       <IconButton
         colorScheme="red"
-        variant="surface"
-        size="xs"
         fullRounded
         onClick={onOpen}
+        size="xs"
+        variant="surface"
       >
         <Trash />
       </IconButton>
-      <DeleteGameModal gameId={gameId} opened={open} onClose={onClose} />
+      <DeleteGameModal gameId={gameId} onClose={onClose} opened={open} />
     </>
   );
 };

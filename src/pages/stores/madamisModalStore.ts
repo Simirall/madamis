@@ -14,9 +14,9 @@ type MadamisModalAction = {
 export const useMadamisModalStore = create<
   MadamisModalState & MadamisModalAction
 >((set) => ({
-  open: false,
-  madamisId: undefined,
   createOpen: () => set(() => ({ open: true })),
-  editOpen: (id) => set(() => ({ open: true, madamisId: id })),
-  onClose: () => set(() => ({ open: false, madamisId: undefined })),
+  editOpen: (id) => set(() => ({ madamisId: id, open: true })),
+  madamisId: undefined,
+  onClose: () => set(() => ({ madamisId: undefined, open: false })),
+  open: false,
 }));
