@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { z } from "zod";
 import * as schema from "../../schema";
-import { madamis, users } from "../../schema";
+import { madamis } from "../../schema";
 
 const madamisPostSchema = z.object({
   bought: z.boolean().transform((b) => Number(b)),
@@ -25,7 +25,6 @@ const booleanQuerySchema = z
 
 const madamisGetSchema = z.object({
   gmRequired: z.coerce.number().int().min(0).max(2).optional(),
-  onlyAddable: booleanQuerySchema,
   onlyBought: booleanQuerySchema,
   onlyNotPlayed: booleanQuerySchema,
   page: z.coerce.number().int().min(1).default(1),
@@ -55,22 +54,10 @@ export const madamisApp = madamisApi
         },
       },
     });
-    const userList = await db.select().from(users).all();
 
     const filteredMadamisList = madamisList
       .filter((d) => (params.onlyNotPlayed ? d.games.length === 0 : true))
       .filter((d) => (params.onlyBought ? Boolean(d.bought) : true))
-      .filter((d) => {
-        if (!params.onlyAddable) {
-          return true;
-        }
-
-        const playedUsers = new Set(
-          d.games.flatMap((g) => g.gameUsers.map((u) => u.user.id)),
-        );
-
-        return userList.length - playedUsers.size >= d.player;
-      })
       .filter((d) =>
         params.gmRequired === undefined
           ? true

@@ -37,19 +37,11 @@ const getCurrentMadamisPage = () => {
 };
 
 export const useMadamisList = (page = getCurrentMadamisPage()) => {
-  const {
-    gmRequired,
-    onlyAddable,
-    onlyBought,
-    onlyNotPlayed,
-    players,
-    sortKey,
-    sortOrder,
-  } = useMadamisNavigationStore();
+  const { gmRequired, onlyBought, onlyNotPlayed, players, sortKey, sortOrder } =
+    useMadamisNavigationStore();
 
   const query: MadamisListQuery = {
-    ...(gmRequired && gmRequired !== "all" ? { gmRequired } : {}),
-    onlyAddable: booleanQuery(onlyAddable),
+    ...(gmRequired ? { gmRequired } : {}),
     onlyBought: booleanQuery(onlyBought),
     onlyNotPlayed: booleanQuery(onlyNotPlayed),
     page: String(page),

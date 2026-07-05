@@ -34,10 +34,6 @@ const playerItems: Select.Item[] = [
 
 const gmRequiredItems: Select.Item[] = [
   {
-    label: "すべて",
-    value: "all",
-  },
-  {
     label: "GM任意",
     value: "0",
   },
@@ -81,8 +77,6 @@ export const MadamisNavigation = ({
   const {
     gmRequired,
     setGmRequired,
-    onlyAddable,
-    setOnlyAddable,
     onlyBought,
     setOnlyBought,
     onlyNotPlayed,
@@ -125,19 +119,6 @@ export const MadamisNavigation = ({
             label="購入済みのみ"
             onChange={(e) => {
               setOnlyBought(e.target.checked);
-              resetPage();
-            }}
-            variant="surface"
-            w="fit-content"
-            whiteSpace="nowrap"
-          />
-          <CheckboxCard.Root
-            checked={onlyAddable}
-            colorScheme="blue"
-            flexShrink={0}
-            label="試合追加可能のみ"
-            onChange={(e) => {
-              setOnlyAddable(e.target.checked);
               resetPage();
             }}
             variant="surface"

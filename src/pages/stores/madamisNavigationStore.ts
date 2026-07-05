@@ -8,7 +8,6 @@ export type MadamisSortOrder = "asc" | "desc";
 
 type MadamisNavigationStore = {
   gmRequired: string | undefined;
-  onlyAddable: boolean;
   onlyBought: boolean;
   onlyNotPlayed: boolean;
   players: string | undefined;
@@ -18,7 +17,6 @@ type MadamisNavigationStore = {
 
 type MadamisNavigationAction = {
   setGmRequired: (gmRequired: string | undefined) => void;
-  setOnlyAddable: (onlyAddable: boolean) => void;
   setOnlyBought: (onlyBought: boolean) => void;
   setPlayed: (played: boolean) => void;
   setPlayers: (n: string | undefined) => void;
@@ -31,14 +29,12 @@ export const useMadamisNavigationStore = create<
 >()(
   persist(
     (set) => ({
-      gmRequired: "all",
-      onlyAddable: false,
+      gmRequired: undefined,
       onlyBought: false,
       onlyNotPlayed: false,
       players: undefined,
       setGmRequired: (gmRequired: string | undefined) =>
         set(() => ({ gmRequired })),
-      setOnlyAddable: (onlyAddable: boolean) => set(() => ({ onlyAddable })),
       setOnlyBought: (onlyBought: boolean) => set(() => ({ onlyBought })),
 
       setPlayed: (played: boolean) => set(() => ({ onlyNotPlayed: played })),
