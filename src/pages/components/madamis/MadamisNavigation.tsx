@@ -1,8 +1,4 @@
-import {
-  CheckboxCardRoot as CheckboxCard,
-  Flex,
-  Select,
-} from "@yamada-ui/react";
+import { CheckboxCard, Flex, Select } from "@yamada-ui/react";
 import { useMadamisNavigationStore } from "../../stores/madamisNavigationStore";
 
 const playerItems: Select.Item[] = [
@@ -49,7 +45,7 @@ export const MadamisNavigation = () => {
       gap="md"
       justifyContent="center"
     >
-      <CheckboxCard
+      <CheckboxCard.Root
         checked={onlyNotPlayed}
         colorScheme="teal"
         flexShrink={0}
@@ -61,7 +57,7 @@ export const MadamisNavigation = () => {
         w="fit-content"
         whiteSpace="nowrap"
       />
-      <CheckboxCard
+      <CheckboxCard.Root
         checked={onlyPlayable}
         colorScheme="cyan"
         flexShrink={0}

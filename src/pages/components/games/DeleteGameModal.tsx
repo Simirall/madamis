@@ -3,9 +3,7 @@ import {
   Button,
   HStack,
   IconButton,
-  ModalRoot as Modal,
-  ModalBody,
-  ModalHeader,
+  Modal,
   useDisclosure,
 } from "@yamada-ui/react";
 import { hc } from "hono/client";
@@ -37,24 +35,28 @@ const DeleteGameModal: FC<{
   };
 
   return (
-    <Modal onClose={onClose} open={opened} size="sm">
-      <ModalHeader>削除しますか？</ModalHeader>
-      <ModalBody>
-        <HStack>
-          <Button colorScheme="red" loading={loading} onClick={onDelete}>
-            削除する
-          </Button>
-          <Button
-            colorScheme="sky"
-            loading={loading}
-            onClick={onClose}
-            variant="subtle"
-          >
-            削除しない
-          </Button>
-        </HStack>
-      </ModalBody>
-    </Modal>
+    <Modal.Root onClose={onClose} open={opened} size="sm">
+      <Modal.Content>
+        <Modal.Header>
+          <Modal.Title>削除しますか？</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <HStack>
+            <Button colorScheme="red" loading={loading} onClick={onDelete}>
+              削除する
+            </Button>
+            <Button
+              colorScheme="sky"
+              loading={loading}
+              onClick={onClose}
+              variant="subtle"
+            >
+              削除しない
+            </Button>
+          </HStack>
+        </Modal.Body>
+      </Modal.Content>
+    </Modal.Root>
   );
 };
 

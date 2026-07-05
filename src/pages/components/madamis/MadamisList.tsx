@@ -1,7 +1,7 @@
 import { Link, NuclearPlant, PencilSimple } from "@phosphor-icons/react";
 import {
   Button,
-  CardRoot as Card,
+  Card,
   EmptyState,
   Grid,
   HStack,
@@ -95,7 +95,7 @@ const MadamisCard: FC<{
   const { editOpen } = useMadamisModalStore();
 
   return (
-    <Card
+    <Card.Root
       as={Grid}
       display="grid"
       gridRow="span 4"
@@ -162,6 +162,6 @@ const MadamisCard: FC<{
       ) : (
         <Button disabled>未購入</Button>
       )}
-    </Card>
+    </Card.Root>
   );
 };

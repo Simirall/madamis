@@ -1,4 +1,4 @@
-import { CardRoot as Card, HStack, Tag, VStack, Wrap } from "@yamada-ui/react";
+import { Card, HStack, Tag, VStack, Wrap } from "@yamada-ui/react";
 import type { InferResponseType } from "hono";
 import { hc } from "hono/client";
 import type { FC } from "react";
@@ -16,7 +16,7 @@ export const GameState: FC<{
   const date = new Date(game.date).toLocaleDateString("ja-JP");
 
   return (
-    <Card p="sm" shadow="md">
+    <Card.Root p="sm" shadow="md">
       <VStack gap="sm">
         <HStack gap="sm">
           <Tag colorScheme="blue" size="sm">
@@ -46,6 +46,6 @@ export const GameState: FC<{
           })}
         </Wrap>
       </VStack>
-    </Card>
+    </Card.Root>
   );
 };

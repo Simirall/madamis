@@ -1,18 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
-  CalendarRoot as Calendar,
-  FieldsetRoot as Fieldset,
+  Calendar,
+  Field,
   Heading,
   HStack,
-  ModalRoot as Modal,
-  ModalBody,
-  ModalHeader,
-  NativeSelectRoot as NativeSelect,
+  Modal,
+  Select,
   Tag,
   Text,
-  Toggle,
-  ToggleGroupRoot as ToggleGroup,
+  ToggleGroup,
   VStack,
   Wrap,
 } from "@yamada-ui/react";
@@ -45,7 +42,7 @@ export const GameModal = () => {
   const userIds = users?.map((u) => u.id.toString());
 
   return (
-    <Modal
+    <Modal.Root
       closeOnOverlay={false}
       onClose={() => {
         onClose();
@@ -53,15 +50,19 @@ export const GameModal = () => {
       open={open}
       size="lg"
     >
-      <ModalHeader>試合を追加</ModalHeader>
-      <ModalBody>
-        {!madamis || !users || !userIds ? (
-          <Loader />
-        ) : (
-          <GameForm madamis={madamis} userIds={userIds} users={users} />
-        )}
-      </ModalBody>
-    </Modal>
+      <Modal.Content>
+        <Modal.Header>
+          <Modal.Title>試合を追加</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {!madamis || !users || !userIds ? (
+            <Loader />
+          ) : (
+            <GameForm madamis={madamis} userIds={userIds} users={users} />
+          )}
+        </Modal.Body>
+      </Modal.Content>
+    </Modal.Root>
   );
 };
 
@@ -76,6 +77,10 @@ const GameForm: FC<{
   const playedPlayers = madamis.games.flatMap((g) =>
     g.gameUsers.map((u) => u.user.id.toString()),
   );
+  const userItems: Select.Item[] = users.map((u) => ({
+    label: u.name,
+    value: u.id.toString(),
+  }));
 
   const formSchema = z.object({
     date: z.date(),
@@ -86,7 +91,6 @@ const GameForm: FC<{
   type FormSchema = z.infer<typeof formSchema>;
 
   const {
-    register,
     control,
     watch,
     reset,
@@ -119,7 +123,7 @@ const GameForm: FC<{
   };
 
   return (
-    <VStack as="form" onSubmit={handleSubmit(onSubmit)}>
+    <VStack as="form" gap="md" onSubmit={handleSubmit(onSubmit)}>
       <Heading>{madamis.title}</Heading>
       <HStack>
         <Tag colorScheme={gmRequiredBadgeColor[madamis.gmRequired]} size="lg">
@@ -129,22 +133,27 @@ const GameForm: FC<{
           PL: {madamis.player}人
         </Tag>
       </HStack>
-      <Fieldset
+      <Field.Root
         errorMessage={errors.gm?.message}
         invalid={!!errors.gm}
-        legend={gmRole[madamis.gmRequired]}
+        label={gmRole[madamis.gmRequired]}
+        name="gm"
       >
-        <NativeSelect
-          items={users.map((u) => ({
-            label: u.name,
-            value: u.id.toString(),
-          }))}
-          {...register("gm")}
+        <Controller
+          control={control}
+          name="gm"
+          render={({ field }) => (
+            <Select.Root
+              items={userItems}
+              onChange={field.onChange}
+              value={field.value}
+            />
+          )}
         />
-      </Fieldset>
+      </Field.Root>
       <VStack gap="sm">
         <Text>プレイヤー</Text>
-        <ToggleGroup
+        <ToggleGroup.Root
           as={Wrap}
           justifyContent="center"
           onChange={(e) => {
@@ -164,7 +173,7 @@ const GameForm: FC<{
                 ),
             )
             .map((u) => (
-              <Toggle
+              <ToggleGroup.Item
                 colorScheme="orange"
                 key={u.id}
                 px="sm"
@@ -173,25 +182,26 @@ const GameForm: FC<{
                 variant="outline"
               >
                 {u.name}
-              </Toggle>
+              </ToggleGroup.Item>
             ))}
-        </ToggleGroup>
+        </ToggleGroup.Root>
         {errors.players && (
           <Text color="red" fontSize="sm">
             {errors.players.message}
           </Text>
         )}
       </VStack>
-      <Fieldset
+      <Field.Root
         errorMessage={errors.date?.message}
         invalid={!!errors.date}
-        legend="開催日"
+        label="開催日"
+        name="date"
       >
         <Controller
           control={control}
           name="date"
           render={({ field }) => (
-            <Calendar
+            <Calendar.Root
               {...field}
               locale="ja-JP"
               startDayOfWeek="sunday"
@@ -199,7 +209,7 @@ const GameForm: FC<{
             />
           )}
         />
-      </Fieldset>
+      </Field.Root>
       <Button colorScheme="lime" loading={isSubmitting} type="submit">
         追加
       </Button>

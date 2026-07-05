@@ -1,4 +1,4 @@
-import { ContainerRoot as Container } from "@yamada-ui/react";
+import { Container } from "@yamada-ui/react";
 import { GameModal } from "./components/games/GameModal";
 import { Header } from "./components/Header";
 import { AddMadamisButton } from "./components/madamis/AddMadamisButton";
@@ -10,9 +10,9 @@ export const App = () => {
     <>
       <Header />
       <AddMadamisButton />
-      <Container maxW="full">
+      <Container.Root maxW="full">
         <MadamisContainer />
-      </Container>
+      </Container.Root>
       <MadamisModal />
       <GameModal />
     </>

@@ -2,13 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Checkbox,
-  FieldsetRoot as Fieldset,
+  Field,
   Input,
-  ModalRoot as Modal,
-  ModalBody,
-  ModalHeader,
-  NativeSelectRoot as NativeSelect,
-  SegmentedControlRoot as SegmentedControl,
+  Modal,
+  SegmentedControl,
+  Select,
   VStack,
 } from "@yamada-ui/react";
 import { hc, type InferResponseType } from "hono/client";
@@ -23,6 +21,15 @@ import { Loader } from "../Loader";
 import { DeleteMadamisButton } from "./DeleteMadamisModal";
 
 const client = hc<AppType>("/api");
+
+const playerItems: Select.Item[] = [
+  { label: "1", value: "1" },
+  { label: "2", value: "2" },
+  { label: "3", value: "3" },
+  { label: "4", value: "4" },
+  { label: "5", value: "5" },
+  { label: "6", value: "6" },
+];
 
 const formSchema = (urls: ReadonlyArray<string>) =>
   z.object({
@@ -51,16 +58,20 @@ export const MadamisModal = () => {
     .map((d) => d.link);
 
   return (
-    <Modal closeOnOverlay={false} onClose={onClose} open={open}>
-      <ModalHeader>{`マダミスを${editData ? "編集" : "追加"}`}</ModalHeader>
-      <ModalBody>
-        {madamisUrls ? (
-          <MadamisForm editData={editData} madamisUrls={madamisUrls} />
-        ) : (
-          <Loader />
-        )}
-      </ModalBody>
-    </Modal>
+    <Modal.Root closeOnOverlay={false} onClose={onClose} open={open} size="lg">
+      <Modal.Content>
+        <Modal.Header>
+          <Modal.Title>{`マダミスを${editData ? "編集" : "追加"}`}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {madamisUrls ? (
+            <MadamisForm editData={editData} madamisUrls={madamisUrls} />
+          ) : (
+            <Loader />
+          )}
+        </Modal.Body>
+      </Modal.Content>
+    </Modal.Root>
   );
 };
 
@@ -106,43 +117,46 @@ const MadamisForm: FC<{
   };
 
   return (
-    <VStack as="form" onSubmit={handleSubmit(onSubmit)}>
-      <Fieldset
+    <VStack as="form" gap="md" onSubmit={handleSubmit(onSubmit)}>
+      <Field.Root
         errorMessage={errors.title?.message}
         invalid={!!errors.title}
-        legend="タイトル"
+        label="タイトル"
+        name="title"
       >
         <Input placeholder="🧊山脈 陰謀の分水嶺" {...register("title")} />
-      </Fieldset>
-      <Fieldset
+      </Field.Root>
+      <Field.Root
         errorMessage={errors.link?.message}
         invalid={!!errors.link}
-        legend="リンク"
+        label="リンク"
+        name="link"
       >
         <Input placeholder="https://example.booth.pm" {...register("link")} />
-      </Fieldset>
-      <Fieldset
+      </Field.Root>
+      <Field.Root
         errorMessage={errors.player?.message}
         invalid={!!errors.player}
-        legend="PL人数"
+        label="PL人数"
+        name="player"
       >
-        <NativeSelect
-          items={[
-            { label: "1", value: "1" },
-            { label: "2", value: "2" },
-            { label: "3", value: "3" },
-            { label: "4", value: "4" },
-            { label: "5", value: "5" },
-            { label: "6", value: "6" },
-          ]}
-          {...register("player")}
+        <Controller
+          control={control}
+          name="player"
+          render={({ field }) => (
+            <Select.Root
+              items={playerItems}
+              onChange={(value) => field.onChange(Number(value))}
+              value={String(field.value)}
+            />
+          )}
         />
-      </Fieldset>
+      </Field.Root>
       <Controller
         control={control}
         name="gmRequired"
         render={({ field }) => (
-          <SegmentedControl
+          <SegmentedControl.Root
             colorScheme="yellow"
             items={gmRequired.map((g, i) => ({
               label: g,
