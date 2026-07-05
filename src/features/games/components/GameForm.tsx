@@ -66,7 +66,9 @@ export const GameForm: FC<GameFormProps> = ({
       gm: users[0]?.id.toString() ?? "",
       players: [],
     },
+    mode: "onSubmit",
     resolver: zodResolver(formSchema),
+    reValidateMode: "onSubmit",
   });
   const selectedGm = watch("gm");
   const selectedPlayers = watch("players");
@@ -118,7 +120,6 @@ export const GameForm: FC<GameFormProps> = ({
                   setValue(
                     "players",
                     selectedPlayers.filter((player) => player !== value),
-                    { shouldValidate: true },
                   );
                 }
               }}
@@ -138,7 +139,7 @@ export const GameForm: FC<GameFormProps> = ({
           as={Wrap}
           justifyContent="center"
           onChange={(value) => {
-            setValue("players", value, { shouldValidate: true });
+            setValue("players", value);
           }}
           value={selectedPlayers}
         >
