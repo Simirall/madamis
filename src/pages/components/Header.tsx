@@ -8,6 +8,7 @@ import {
   useColorMode,
   useColorModeValue,
 } from "@yamada-ui/react";
+import { MadamisNavigation } from "./madamis/MadamisNavigation";
 
 export const Header = () => {
   const bg = useColorModeValue<
@@ -36,7 +37,10 @@ export const Header = () => {
       >
         J∞マダミス部
       </Button>
-      <ColorModeToggle />
+      <HStack>
+        <MadamisNavigation />
+        <ColorModeToggle />
+      </HStack>
     </HStack>
   );
 };

@@ -10,7 +10,7 @@ import {
   Text,
   VStack,
 } from "@yamada-ui/react";
-import { type FC, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import {
   gmRequired,
   gmRequiredBadgeColor,
@@ -18,10 +18,10 @@ import {
 import type { MadamisListItem } from "../../hooks/useMadamisList";
 import { useMadamisList } from "../../hooks/useMadamisList";
 import { useMadamisModalStore } from "../../stores/madamisModalStore";
+import { madamisNavigationChangedEvent } from "../../stores/madamisNavigationStore";
 import { AddGameButton } from "./../games/AddGamesButton";
 import { GameState } from "./../games/GameState";
 import { Loader } from "../Loader";
-import { MadamisNavigation } from "./MadamisNavigation";
 
 const getInitialPage = () => {
   const page = Number.parseInt(
@@ -36,6 +36,21 @@ export const MadamisContainer = () => {
   const [page, setPage] = useState(getInitialPage);
   const { data: madamis } = useMadamisList(page);
 
+  useEffect(() => {
+    const onNavigationChanged = () => {
+      setPage(getInitialPage());
+    };
+
+    window.addEventListener(madamisNavigationChangedEvent, onNavigationChanged);
+
+    return () => {
+      window.removeEventListener(
+        madamisNavigationChangedEvent,
+        onNavigationChanged,
+      );
+    };
+  }, []);
+
   const updatePage = (nextPage: number) => {
     const params = new URLSearchParams(window.location.search);
     params.set("page", String(nextPage));
@@ -49,7 +64,6 @@ export const MadamisContainer = () => {
 
   return (
     <VStack align="center" p="sm">
-      <MadamisNavigation onResetPage={() => setPage(1)} />
       <Grid
         gap="md"
         gridTemplateColumns="repeat(auto-fit, minmax(350px, 1fr))"

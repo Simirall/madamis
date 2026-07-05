@@ -1,9 +1,23 @@
-import { Card, CheckboxCard, HStack, Select, VStack } from "@yamada-ui/react";
+import { FunnelSimple } from "@phosphor-icons/react";
+import {
+  Button,
+  CheckboxCard,
+  HStack,
+  IconButton,
+  Modal,
+  Select,
+  Text,
+  VStack,
+} from "@yamada-ui/react";
+import { useState } from "react";
 import type {
   MadamisSortKey,
   MadamisSortOrder,
 } from "../../stores/madamisNavigationStore";
-import { useMadamisNavigationStore } from "../../stores/madamisNavigationStore";
+import {
+  madamisNavigationChangedEvent,
+  useMadamisNavigationStore,
+} from "../../stores/madamisNavigationStore";
 
 const playerItems: Select.Item[] = [
   {
@@ -69,11 +83,25 @@ const sortOrderItems: Select.Item[] = [
   },
 ];
 
-export const MadamisNavigation = ({
-  onResetPage,
-}: {
-  onResetPage: () => void;
-}) => {
+type MadamisNavigationDraft = {
+  gmRequired: string | undefined;
+  onlyBought: boolean;
+  onlyNotPlayed: boolean;
+  players: string | undefined;
+  sortKey: MadamisSortKey;
+  sortOrder: MadamisSortOrder;
+};
+
+const defaultDraft: MadamisNavigationDraft = {
+  gmRequired: undefined,
+  onlyBought: false,
+  onlyNotPlayed: false,
+  players: undefined,
+  sortKey: "added",
+  sortOrder: "asc",
+};
+
+export const MadamisNavigation = () => {
   const {
     gmRequired,
     setGmRequired,
@@ -88,101 +116,194 @@ export const MadamisNavigation = ({
     sortOrder,
     setSortOrder,
   } = useMadamisNavigationStore();
+  const currentDraft = {
+    gmRequired,
+    onlyBought,
+    onlyNotPlayed,
+    players,
+    sortKey,
+    sortOrder,
+  } satisfies MadamisNavigationDraft;
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<MadamisNavigationDraft>(currentDraft);
+
   const resetPage = () => {
     const params = new URLSearchParams(window.location.search);
     params.set("page", "1");
     window.history.replaceState(null, "", `?${params.toString()}`);
-    onResetPage();
+    window.dispatchEvent(new CustomEvent(madamisNavigationChangedEvent));
+  };
+
+  const onOpen = () => {
+    setDraft(currentDraft);
+    setOpen(true);
+  };
+
+  const onClose = () => {
+    const changed =
+      draft.gmRequired !== gmRequired ||
+      draft.onlyBought !== onlyBought ||
+      draft.onlyNotPlayed !== onlyNotPlayed ||
+      draft.players !== players ||
+      draft.sortKey !== sortKey ||
+      draft.sortOrder !== sortOrder;
+
+    setGmRequired(draft.gmRequired);
+    setOnlyBought(draft.onlyBought);
+    setPlayed(draft.onlyNotPlayed);
+    setPlayers(draft.players);
+    setSortKey(draft.sortKey);
+    setSortOrder(draft.sortOrder);
+
+    if (changed) {
+      resetPage();
+    }
+
+    setOpen(false);
   };
 
   return (
-    <HStack>
-      <VStack as={Card.Root} p="4">
-        <HStack wrap="wrap">
-          <CheckboxCard.Root
-            checked={onlyNotPlayed}
-            colorScheme="teal"
-            flexShrink={0}
-            label="未プレイのみ"
-            onChange={(e) => {
-              setPlayed(e.target.checked);
-              resetPage();
-            }}
-            variant="surface"
-            w="fit-content"
-            whiteSpace="nowrap"
-          />
-          <CheckboxCard.Root
-            checked={onlyBought}
-            colorScheme="cyan"
-            flexShrink={0}
-            label="購入済みのみ"
-            onChange={(e) => {
-              setOnlyBought(e.target.checked);
-              resetPage();
-            }}
-            variant="surface"
-            w="fit-content"
-            whiteSpace="nowrap"
-          />
-        </HStack>
-        <HStack wrap="wrap">
-          <Select.Root
-            items={playerItems}
-            onChange={(value) => {
-              setPlayers(value);
-              resetPage();
-            }}
-            placeholder="遊ぶ人数"
-            rootProps={{
-              w: "fit-content",
-            }}
-            size="lg"
-            value={players}
-            variant="outline"
-          />
-          <Select.Root
-            items={gmRequiredItems}
-            onChange={(value) => {
-              setGmRequired(value);
-              resetPage();
-            }}
-            placeholder="GM種別"
-            rootProps={{
-              w: "fit-content",
-            }}
-            size="lg"
-            value={gmRequired}
-            variant="outline"
-          />
-          <Select.Root
-            items={sortKeyItems}
-            onChange={(value) => {
-              setSortKey(value as MadamisSortKey);
-              resetPage();
-            }}
-            rootProps={{
-              w: "fit-content",
-            }}
-            size="lg"
-            value={sortKey}
-            variant="outline"
-          />
-          <Select.Root
-            items={sortOrderItems}
-            onChange={(value) => {
-              setSortOrder(value as MadamisSortOrder);
-              resetPage();
-            }}
-            rootProps={{
-              w: "fit-content",
-            }}
-            size="lg"
-            value={sortOrder}
-            variant="outline"
-          />
-        </HStack>
-      </VStack>
-    </HStack>
+    <>
+      <IconButton
+        colorScheme="teal"
+        fullRounded
+        onClick={onOpen}
+        size="lg"
+        variant="subtle"
+      >
+        <FunnelSimple size="1.6rem" weight="bold" />
+      </IconButton>
+      <Modal.Root onClose={onClose} open={open} size="lg">
+        <Modal.Content>
+          <Modal.Header>
+            <Modal.Title>表示条件</Modal.Title>
+            <HStack gap="sm">
+              <Button
+                colorScheme="warning"
+                onClick={() => {
+                  setDraft(defaultDraft);
+                }}
+                size="sm"
+                variant="subtle"
+              >
+                リセット
+              </Button>
+            </HStack>
+          </Modal.Header>
+          <Modal.Body>
+            <VStack align="stretch" gap="lg">
+              <VStack align="stretch" gap="md">
+                <Text fontSize="lg" fontWeight="bold">
+                  フィルター
+                </Text>
+                <HStack wrap="wrap">
+                  <CheckboxCard.Root
+                    checked={draft.onlyNotPlayed}
+                    colorScheme="teal"
+                    flexShrink={0}
+                    label="未プレイのみ"
+                    onChange={(e) => {
+                      setDraft((value) => ({
+                        ...value,
+                        onlyNotPlayed: e.target.checked,
+                      }));
+                    }}
+                    variant="surface"
+                    w="fit-content"
+                    whiteSpace="nowrap"
+                  />
+                  <CheckboxCard.Root
+                    checked={draft.onlyBought}
+                    colorScheme="cyan"
+                    flexShrink={0}
+                    label="購入済みのみ"
+                    onChange={(e) => {
+                      setDraft((value) => ({
+                        ...value,
+                        onlyBought: e.target.checked,
+                      }));
+                    }}
+                    variant="surface"
+                    w="fit-content"
+                    whiteSpace="nowrap"
+                  />
+                </HStack>
+                <HStack wrap="wrap">
+                  <Select.Root
+                    items={playerItems}
+                    onChange={(value) => {
+                      setDraft((draftValue) => ({
+                        ...draftValue,
+                        players: value,
+                      }));
+                    }}
+                    placeholder="遊ぶ人数"
+                    rootProps={{
+                      w: "fit-content",
+                    }}
+                    size="lg"
+                    value={draft.players}
+                    variant="outline"
+                  />
+                  <Select.Root
+                    items={gmRequiredItems}
+                    onChange={(value) => {
+                      setDraft((draftValue) => ({
+                        ...draftValue,
+                        gmRequired: value,
+                      }));
+                    }}
+                    placeholder="GM種別"
+                    rootProps={{
+                      w: "fit-content",
+                    }}
+                    size="lg"
+                    value={draft.gmRequired}
+                    variant="outline"
+                  />
+                </HStack>
+              </VStack>
+              <VStack align="stretch" gap="md">
+                <Text fontSize="lg" fontWeight="bold">
+                  ソート
+                </Text>
+                <HStack wrap="wrap">
+                  <Select.Root
+                    items={sortKeyItems}
+                    onChange={(value) => {
+                      setDraft((draftValue) => ({
+                        ...draftValue,
+                        sortKey: value as MadamisSortKey,
+                      }));
+                    }}
+                    rootProps={{
+                      w: "fit-content",
+                    }}
+                    size="lg"
+                    value={draft.sortKey}
+                    variant="outline"
+                  />
+                  <Select.Root
+                    items={sortOrderItems}
+                    onChange={(value) => {
+                      setDraft((draftValue) => ({
+                        ...draftValue,
+                        sortOrder: value as MadamisSortOrder,
+                      }));
+                    }}
+                    rootProps={{
+                      w: "fit-content",
+                    }}
+                    size="lg"
+                    value={draft.sortOrder}
+                    variant="outline"
+                  />
+                </HStack>
+              </VStack>
+            </VStack>
+          </Modal.Body>
+        </Modal.Content>
+      </Modal.Root>
+    </>
   );
 };

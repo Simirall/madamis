@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export const madamisPageSize = 24;
+export const madamisNavigationChangedEvent = "madamis-navigation-changed";
 
 export type MadamisSortKey = "added" | "title";
 export type MadamisSortOrder = "asc" | "desc";
