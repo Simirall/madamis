@@ -8,6 +8,7 @@ import {
   Box,
   Button,
   Card,
+  Center,
   EmptyState,
   Grid,
   HStack,
@@ -69,7 +70,11 @@ export const MadamisContainer = () => {
   }
 
   if (!madamis) {
-    return <Loader />;
+    return (
+      <Center>
+        <Loader />
+      </Center>
+    );
   }
 
   const start =
@@ -88,11 +93,13 @@ export const MadamisContainer = () => {
       >
         <MadamisList madamis={madamis.items} />
       </Grid>
-      <MadamisPagination
-        currentPage={madamis.page}
-        onChange={updatePage}
-        totalPages={madamis.totalPages}
-      />
+      {madamis.totalPages > 1 && (
+        <MadamisPagination
+          currentPage={madamis.page}
+          onChange={updatePage}
+          totalPages={madamis.totalPages}
+        />
+      )}
     </VStack>
   );
 };
