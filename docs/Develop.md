@@ -4,20 +4,10 @@
 
 ### 0 Prepare Node
 
-Prepare Node Environment
-
-e.g. https://nodejs.org/ https://volta.sh/
-
-Linux(Ubuntu) installation using volta
+use mise
 
 ```sh
-curl https://get.volta.sh | bash
-
-volta install node
-
-volta install corepack
-
-corepack enable
+mise install
 ```
 
 ### 1 Install Dependencies
@@ -36,7 +26,7 @@ To prepare the database, run the migrations
 pnpm migrate
 ```
 
-There is no data in the Users table, so add it  
+There is no data in the Users table, so add it
 (Data can be freely entered)
 
 ```sh

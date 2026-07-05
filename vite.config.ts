@@ -1,9 +1,9 @@
 import build from "@hono/vite-cloudflare-pages";
 import devServer from "@hono/vite-dev-server";
 import adapter from "@hono/vite-dev-server/cloudflare";
-import babel from "@rollup/plugin-babel";
-import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { defineConfig } from "vite";
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
 
 export default defineConfig(({ mode }) => {
   if (mode === "client") {
@@ -12,12 +12,10 @@ export default defineConfig(({ mode }) => {
         rollupOptions: {
           input: "./src/client.tsx",
           plugins: [
-            nodeResolve(),
+            react(),
             babel({
-              babelHelpers: "bundled",
-              extensions: [".ts", ".tsx"],
-              presets: [],
-            }),
+              presets: [reactCompilerPreset()],
+            })
           ],
           output: {
             entryFileNames: "static/client.js",
