@@ -1,4 +1,8 @@
-import { CheckboxCard, Flex, Select } from "@yamada-ui/react";
+import { Card, CheckboxCard, HStack, Select, VStack } from "@yamada-ui/react";
+import type {
+  MadamisSortKey,
+  MadamisSortOrder,
+} from "../../stores/madamisNavigationStore";
 import { useMadamisNavigationStore } from "../../stores/madamisNavigationStore";
 
 const playerItems: Select.Item[] = [
@@ -28,57 +32,176 @@ const playerItems: Select.Item[] = [
   },
 ];
 
-export const MadamisNavigation = () => {
+const gmRequiredItems: Select.Item[] = [
+  {
+    label: "すべて",
+    value: "all",
+  },
+  {
+    label: "GM任意",
+    value: "0",
+  },
+  {
+    label: "GM必須",
+    value: "1",
+  },
+  {
+    label: "GMなし",
+    value: "2",
+  },
+];
+
+const sortKeyItems: Select.Item[] = [
+  {
+    label: "追加順",
+    value: "added",
+  },
+  {
+    label: "名前順",
+    value: "title",
+  },
+];
+
+const sortOrderItems: Select.Item[] = [
+  {
+    label: "昇順",
+    value: "asc",
+  },
+  {
+    label: "降順",
+    value: "desc",
+  },
+];
+
+export const MadamisNavigation = ({
+  onResetPage,
+}: {
+  onResetPage: () => void;
+}) => {
   const {
+    gmRequired,
+    setGmRequired,
+    onlyAddable,
+    setOnlyAddable,
+    onlyBought,
+    setOnlyBought,
     onlyNotPlayed,
     setPlayed,
-    onlyPlayable,
-    setPlayable,
     players,
     setPlayers,
+    sortKey,
+    setSortKey,
+    sortOrder,
+    setSortOrder,
   } = useMadamisNavigationStore();
+  const resetPage = () => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", "1");
+    window.history.replaceState(null, "", `?${params.toString()}`);
+    onResetPage();
+  };
 
   return (
-    <Flex
-      alignItems="center"
-      flexWrap="nowrap"
-      gap="md"
-      justifyContent="center"
-    >
-      <CheckboxCard.Root
-        checked={onlyNotPlayed}
-        colorScheme="teal"
-        flexShrink={0}
-        label="未プレイのみ"
-        onChange={(e) => {
-          setPlayed(e.target.checked);
-        }}
-        variant="surface"
-        w="fit-content"
-        whiteSpace="nowrap"
-      />
-      <CheckboxCard.Root
-        checked={onlyPlayable}
-        colorScheme="cyan"
-        flexShrink={0}
-        label="プレイ可能のみ"
-        onChange={(e) => {
-          setPlayable(e.target.checked);
-        }}
-        variant="surface"
-        w="fit-content"
-        whiteSpace="nowrap"
-      />
-      <Select.Root
-        flexShrink={0}
-        items={playerItems}
-        onChange={setPlayers}
-        placeholder="遊ぶ人数"
-        size="lg"
-        value={players}
-        variant="outline"
-        w="36"
-      />
-    </Flex>
+    <HStack>
+      <VStack as={Card.Root} p="4">
+        <HStack wrap="wrap">
+          <CheckboxCard.Root
+            checked={onlyNotPlayed}
+            colorScheme="teal"
+            flexShrink={0}
+            label="未プレイのみ"
+            onChange={(e) => {
+              setPlayed(e.target.checked);
+              resetPage();
+            }}
+            variant="surface"
+            w="fit-content"
+            whiteSpace="nowrap"
+          />
+          <CheckboxCard.Root
+            checked={onlyBought}
+            colorScheme="cyan"
+            flexShrink={0}
+            label="購入済みのみ"
+            onChange={(e) => {
+              setOnlyBought(e.target.checked);
+              resetPage();
+            }}
+            variant="surface"
+            w="fit-content"
+            whiteSpace="nowrap"
+          />
+          <CheckboxCard.Root
+            checked={onlyAddable}
+            colorScheme="blue"
+            flexShrink={0}
+            label="試合追加可能のみ"
+            onChange={(e) => {
+              setOnlyAddable(e.target.checked);
+              resetPage();
+            }}
+            variant="surface"
+            w="fit-content"
+            whiteSpace="nowrap"
+          />
+        </HStack>
+        <HStack wrap="wrap">
+          <Select.Root
+            items={playerItems}
+            onChange={(value) => {
+              setPlayers(value);
+              resetPage();
+            }}
+            placeholder="遊ぶ人数"
+            rootProps={{
+              w: "fit-content",
+            }}
+            size="lg"
+            value={players}
+            variant="outline"
+          />
+          <Select.Root
+            items={gmRequiredItems}
+            onChange={(value) => {
+              setGmRequired(value);
+              resetPage();
+            }}
+            placeholder="GM種別"
+            rootProps={{
+              w: "fit-content",
+            }}
+            size="lg"
+            value={gmRequired}
+            variant="outline"
+          />
+          <Select.Root
+            items={sortKeyItems}
+            onChange={(value) => {
+              setSortKey(value as MadamisSortKey);
+              resetPage();
+            }}
+            rootProps={{
+              w: "fit-content",
+            }}
+            size="lg"
+            value={sortKey}
+            variant="outline"
+          />
+          <Select.Root
+            items={sortOrderItems}
+            onChange={(value) => {
+              setSortOrder(value as MadamisSortOrder);
+              resetPage();
+            }}
+            rootProps={{
+              w: "fit-content",
+            }}
+            size="lg"
+            value={sortOrder}
+            variant="outline"
+          />
+        </HStack>
+      </VStack>
+    </HStack>
   );
 };

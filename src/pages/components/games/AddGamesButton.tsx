@@ -2,7 +2,6 @@ import { Button } from "@yamada-ui/react";
 import { hc } from "hono/client";
 import { useState } from "react";
 import type { AppType } from "../../../api";
-import { gm } from "../../../constants/gmRequired";
 import { useMadamisList } from "../../hooks/useMadamisList";
 import { useUser } from "../../hooks/useUser";
 import { useGameModalStore } from "../../stores/gameModalStore";
@@ -16,7 +15,7 @@ export const AddGameButton = ({ madamisId }: { madamisId: number }) => {
   const { createOpen } = useGameModalStore();
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const madamis = madamisList?.find((m) => m.id === madamisId);
+  const madamis = madamisList?.items.find((m) => m.id === madamisId);
   const playedPlayers = Array.from(
     new Set(madamis?.games.flatMap((g) => g.gameUsers.map((u) => u.user.id))),
   ).length;
@@ -25,10 +24,7 @@ export const AddGameButton = ({ madamisId }: { madamisId: number }) => {
     return <Loader />;
   }
 
-  const canAddGame =
-    users.length -
-      (playedPlayers + (madamis.gmRequired === gm.required ? 0 : 1)) >
-    madamis.player;
+  const canAddGame = users.length - playedPlayers >= madamis.player;
 
   const handleBuy = async () => {
     setIsUpdating(true);

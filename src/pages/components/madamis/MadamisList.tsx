@@ -7,38 +7,49 @@ import {
   HStack,
   IconButton,
   Tag,
+  Text,
   VStack,
 } from "@yamada-ui/react";
-import type { InferResponseType } from "hono";
-import { hc } from "hono/client";
-import type { FC } from "react";
-import type { AppType } from "../../../api";
+import { type FC, useState } from "react";
 import {
   gmRequired,
   gmRequiredBadgeColor,
 } from "../../../constants/gmRequired";
+import type { MadamisListItem } from "../../hooks/useMadamisList";
 import { useMadamisList } from "../../hooks/useMadamisList";
-import { useUser } from "../../hooks/useUser";
 import { useMadamisModalStore } from "../../stores/madamisModalStore";
-import { useMadamisNavigationStore } from "../../stores/madamisNavigationStore";
 import { AddGameButton } from "./../games/AddGamesButton";
 import { GameState } from "./../games/GameState";
 import { Loader } from "../Loader";
 import { MadamisNavigation } from "./MadamisNavigation";
 
-const client = hc<AppType>("/api");
+const getInitialPage = () => {
+  const page = Number.parseInt(
+    new URLSearchParams(window.location.search).get("page") ?? "1",
+    10,
+  );
+
+  return Number.isNaN(page) || page < 1 ? 1 : page;
+};
 
 export const MadamisContainer = () => {
-  const { data: madamis } = useMadamisList();
-  const { data: users } = useUser();
+  const [page, setPage] = useState(getInitialPage);
+  const { data: madamis } = useMadamisList(page);
 
-  if (!madamis || !users) {
+  const updatePage = (nextPage: number) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", String(nextPage));
+    window.history.replaceState(null, "", `?${params.toString()}`);
+    setPage(nextPage);
+  };
+
+  if (!madamis) {
     return <Loader />;
   }
 
   return (
     <VStack align="center" p="sm">
-      <MadamisNavigation />
+      <MadamisNavigation onResetPage={() => setPage(1)} />
       <Grid
         gap="md"
         gridTemplateColumns="repeat(auto-fit, minmax(350px, 1fr))"
@@ -46,51 +57,34 @@ export const MadamisContainer = () => {
         justifyItems="center"
         w="full"
       >
-        <MadamisList madamis={madamis} users={users} />
+        <MadamisList madamis={madamis.items} />
       </Grid>
+      <MadamisPagination
+        currentPage={madamis.page}
+        onChange={updatePage}
+        total={madamis.total}
+        totalPages={madamis.totalPages}
+      />
     </VStack>
   );
 };
 
 const MadamisList: FC<{
-  madamis: InferResponseType<typeof client.madamis.$get>;
-  users: InferResponseType<typeof client.user.$get>;
-}> = ({ madamis, users }) => {
-  const { onlyNotPlayed, onlyPlayable, players } = useMadamisNavigationStore();
+  madamis: ReadonlyArray<MadamisListItem>;
+}> = ({ madamis }) => {
+  if (madamis.length === 0) {
+    return (
+      <EmptyState.Root>
+        <EmptyState.Title>No Madamis</EmptyState.Title>
+      </EmptyState.Root>
+    );
+  }
 
-  const filteredMadamisList = madamis
-    .filter((d) => (onlyNotPlayed ? d.games.length === 0 : true))
-    .filter((d) =>
-      onlyPlayable
-        ? d.bought && users.length - d.games.length * d.player > d.player
-        : true,
-    )
-    .filter((d) => {
-      if (!players) {
-        return true;
-      }
-
-      const playerCount = Number.parseInt(players);
-
-      if (d.gmRequired === 2) {
-        // GMなしの場合
-        return d.player === playerCount;
-      }
-
-      if (d.gmRequired === 1) {
-        // GM必須の場合
-        return d.player + 1 === playerCount;
-      }
-
-      // GM任意の場合
-      return d.player + 1 === playerCount || d.player === playerCount;
-    });
-
-  return filteredMadamisList.map((d) => <MadamisCard key={d.id} madamis={d} />);
+  return madamis.map((d) => <MadamisCard key={d.id} madamis={d} />);
 };
 
 const MadamisCard: FC<{
-  madamis: InferResponseType<typeof client.madamis.$get>[number];
+  madamis: MadamisListItem;
 }> = ({ madamis }) => {
   const { editOpen } = useMadamisModalStore();
 
@@ -159,5 +153,51 @@ const MadamisCard: FC<{
       )}
       <AddGameButton madamisId={madamis.id} />
     </Card.Root>
+  );
+};
+
+const MadamisPagination: FC<{
+  currentPage: number;
+  onChange: (page: number) => void;
+  total: number;
+  totalPages: number;
+}> = ({ currentPage, onChange, total, totalPages }) => {
+  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  return (
+    <VStack gap="sm">
+      <Text color="gray" fontSize="sm">
+        {total}件
+      </Text>
+      <HStack flexWrap="wrap" justifyContent="center">
+        <Button
+          disabled={currentPage <= 1}
+          onClick={() => onChange(currentPage - 1)}
+          size="sm"
+          variant="outline"
+        >
+          前へ
+        </Button>
+        {pages.map((page) => (
+          <Button
+            colorScheme={page === currentPage ? "lime" : "gray"}
+            key={page}
+            onClick={() => onChange(page)}
+            size="sm"
+            variant={page === currentPage ? "solid" : "outline"}
+          >
+            {page}
+          </Button>
+        ))}
+        <Button
+          disabled={currentPage >= totalPages}
+          onClick={() => onChange(currentPage + 1)}
+          size="sm"
+          variant="outline"
+        >
+          次へ
+        </Button>
+      </HStack>
+    </VStack>
   );
 };

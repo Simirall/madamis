@@ -1,25 +1,55 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+export const madamisPageSize = 24;
+
+export type MadamisSortKey = "added" | "title";
+export type MadamisSortOrder = "asc" | "desc";
 
 type MadamisNavigationStore = {
+  gmRequired: string | undefined;
+  onlyAddable: boolean;
+  onlyBought: boolean;
   onlyNotPlayed: boolean;
-  onlyPlayable: boolean;
   players: string | undefined;
+  sortKey: MadamisSortKey;
+  sortOrder: MadamisSortOrder;
 };
 
 type MadamisNavigationAction = {
+  setGmRequired: (gmRequired: string | undefined) => void;
+  setOnlyAddable: (onlyAddable: boolean) => void;
+  setOnlyBought: (onlyBought: boolean) => void;
   setPlayed: (played: boolean) => void;
-  setPlayable: (playable: boolean) => void;
-  setPlayers: (n: string) => void;
+  setPlayers: (n: string | undefined) => void;
+  setSortKey: (sortKey: MadamisSortKey) => void;
+  setSortOrder: (sortOrder: MadamisSortOrder) => void;
 };
 
 export const useMadamisNavigationStore = create<
   MadamisNavigationStore & MadamisNavigationAction
->((set) => ({
-  onlyNotPlayed: false,
-  onlyPlayable: false,
-  players: undefined,
-  setPlayable: (playable: boolean) => set(() => ({ onlyPlayable: playable })),
+>()(
+  persist(
+    (set) => ({
+      gmRequired: "all",
+      onlyAddable: false,
+      onlyBought: false,
+      onlyNotPlayed: false,
+      players: undefined,
+      setGmRequired: (gmRequired: string | undefined) =>
+        set(() => ({ gmRequired })),
+      setOnlyAddable: (onlyAddable: boolean) => set(() => ({ onlyAddable })),
+      setOnlyBought: (onlyBought: boolean) => set(() => ({ onlyBought })),
 
-  setPlayed: (played: boolean) => set(() => ({ onlyNotPlayed: played })),
-  setPlayers: (n: string) => set(() => ({ players: n })),
-}));
+      setPlayed: (played: boolean) => set(() => ({ onlyNotPlayed: played })),
+      setPlayers: (n: string | undefined) => set(() => ({ players: n })),
+      setSortKey: (sortKey: MadamisSortKey) => set(() => ({ sortKey })),
+      setSortOrder: (sortOrder: MadamisSortOrder) => set(() => ({ sortOrder })),
+      sortKey: "added",
+      sortOrder: "asc",
+    }),
+    {
+      name: "madamis-navigation",
+    },
+  ),
+);

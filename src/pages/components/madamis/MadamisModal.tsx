@@ -8,12 +8,13 @@ import {
   SegmentedControl,
   VStack,
 } from "@yamada-ui/react";
-import { hc, type InferResponseType } from "hono/client";
+import { hc } from "hono/client";
 import type { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import type { AppType } from "../../../api";
 import { gmRequired } from "../../../constants/gmRequired";
+import type { MadamisListItem } from "../../hooks/useMadamisList";
 import { useMadamisList } from "../../hooks/useMadamisList";
 import { useMadamisModalStore } from "../../stores/madamisModalStore";
 import { Loader } from "../Loader";
@@ -40,10 +41,10 @@ export const MadamisModal = () => {
   const { open, onClose, madamisId } = useMadamisModalStore();
 
   const editData = madamisId
-    ? data?.find((d) => d.id === madamisId)
+    ? data?.items.find((d) => d.id === madamisId)
     : undefined;
 
-  const madamisUrls = data
+  const madamisUrls = data?.items
     ?.filter((d) => (madamisId ? d.id !== madamisId : true))
     .map((d) => d.link);
 
@@ -67,7 +68,7 @@ export const MadamisModal = () => {
 
 const MadamisForm: FC<{
   madamisUrls: ReadonlyArray<string>;
-  editData?: InferResponseType<typeof client.madamis.$get>[number];
+  editData?: MadamisListItem;
 }> = ({ editData, madamisUrls }) => {
   const { mutate } = useMadamisList();
   const { onClose, madamisId } = useMadamisModalStore();

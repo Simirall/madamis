@@ -24,7 +24,10 @@ import {
   gmRequiredBadgeColor,
   gmRole,
 } from "../../../constants/gmRequired";
-import { useMadamisList } from "../../hooks/useMadamisList";
+import {
+  type MadamisListItem,
+  useMadamisList,
+} from "../../hooks/useMadamisList";
 import { useUser } from "../../hooks/useUser";
 import { useGameModalStore } from "../../stores/gameModalStore";
 import { Loader } from "../Loader";
@@ -38,7 +41,7 @@ export const GameModal = () => {
 
   const { open, onClose, madamisId } = useGameModalStore();
 
-  const madamis = madamisList?.find((m) => m.id === madamisId);
+  const madamis = madamisList?.items.find((m) => m.id === madamisId);
   const userIds = users?.map((u) => u.id.toString());
 
   return (
@@ -67,7 +70,7 @@ export const GameModal = () => {
 };
 
 const GameForm: FC<{
-  madamis: InferResponseType<typeof client.madamis.$get>[number];
+  madamis: MadamisListItem;
   users: InferResponseType<typeof client.user.$get>;
   userIds: ReadonlyArray<string>;
 }> = ({ madamis, users, userIds }) => {
@@ -109,9 +112,9 @@ const GameForm: FC<{
   const onSubmit = async (data: FormSchema) => {
     const reqObj = {
       date: data.date.toISOString(),
-      gm: Number.parseInt(data.gm),
+      gm: Number.parseInt(data.gm, 10),
       madamisId: madamis.id,
-      players: data.players.map((p) => Number.parseInt(p)),
+      players: data.players.map((p) => Number.parseInt(p, 10)),
     };
 
     await client.games.$post({
@@ -168,7 +171,7 @@ const GameForm: FC<{
                 !(
                   (
                     madamis.gmRequired === gm.required &&
-                    u.id === Number.parseInt(watch("gm"))
+                    u.id === Number.parseInt(watch("gm"), 10)
                   ) // GM必須の場合GMを除外
                 ),
             )

@@ -1,15 +1,11 @@
 import { Card, HStack, Tag, VStack, Wrap } from "@yamada-ui/react";
-import type { InferResponseType } from "hono";
-import { hc } from "hono/client";
 import type { FC } from "react";
-import type { AppType } from "../../../api";
 import { gm } from "../../../constants/gmRequired";
+import type { MadamisGame } from "../../hooks/useMadamisList";
 import { DeleteGameButton } from "./DeleteGameModal";
 
-const client = hc<AppType>("/api");
-
 export const GameState: FC<{
-  game: InferResponseType<typeof client.madamis.$get>[number]["games"][number];
+  game: MadamisGame;
   gmRequired: (typeof gm)[keyof typeof gm];
   player: number;
 }> = ({ game, gmRequired, player }) => {
