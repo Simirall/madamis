@@ -17,7 +17,7 @@
     "@yamada-ui/react": "^2.2.3",
     "dayjs": "^1.11.21",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.12.27",
+    "hono": "^4.12.34",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.80.0",
